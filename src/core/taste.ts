@@ -26,12 +26,14 @@ export interface Label {
 /** The AI reviewer answers only yes or no. */
 export type AiRecommendation = Extract<Verdict, "taste_failure" | "fine">;
 
-/** An AI reviewer's account of a note: what is going on in the post and the
- *  note, and the verdict it recommends with its reasons. */
+/** An AI reviewer's account of a note: the context a reader may lack, which
+ *  can be empty, and the verdict it recommends with its reasons and the names
+ *  of the labels it would give. */
 export interface AiReview {
   explanation: string;
   recommendation: AiRecommendation;
   reasoning: string;
+  labels: string[];
   model: string;
   createdAt: string;
 }
@@ -260,6 +262,7 @@ interface AiReviewRow {
   explanation: string;
   recommendation: AiRecommendation;
   reasoning: string;
+  labels: string[];
   model: string;
   created_at: string;
 }
@@ -272,7 +275,7 @@ export function watchAiReviews(source: Source, onReview: (noteId: string, review
     .channel(`ai-reviews-${source}`)
     .on<AiReviewRow>("postgres_changes", { event: "*", schema: "taste", table: "ai_reviews", filter: `source=eq.${source}` }, ({ new: row }) => {
       if (!("note_id" in row)) return;
-      onReview(row.note_id, { explanation: row.explanation, recommendation: row.recommendation, reasoning: row.reasoning, model: row.model, createdAt: row.created_at });
+      onReview(row.note_id, { explanation: row.explanation, recommendation: row.recommendation, reasoning: row.reasoning, labels: row.labels, model: row.model, createdAt: row.created_at });
     })
     .subscribe();
   return () => void supabase.removeChannel(channel);
