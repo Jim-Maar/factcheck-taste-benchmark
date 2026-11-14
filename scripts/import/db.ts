@@ -40,11 +40,13 @@ export async function sourceClient(): Promise<SupabaseClient> {
 
 /** Writes rows into a taste table in chunks. A row whose key exists is
  *  updated with the given columns only, so columns left out keep their value.
- *  With `ignoreDuplicates` an existing row is left alone. */
+ *  With `ignoreDuplicates` an existing row is left alone. A new row takes the
+ *  column's default for a column it leaves out, even when other rows of the
+ *  same chunk have that column. */
 export async function upsertRows(table: string, rows: object[], onConflict: string, ignoreDuplicates = false): Promise<void> {
   for (let start = 0; start < rows.length; start += UPSERT_CHUNK_SIZE) {
     const chunk = rows.slice(start, start + UPSERT_CHUNK_SIZE);
-    const { error } = await target.from(table).upsert(chunk, { onConflict, ignoreDuplicates });
+    const { error } = await target.from(table).upsert(chunk, { onConflict, ignoreDuplicates, defaultToNull: false });
     if (error) throw new Error(`Writing ${table} failed: ${error.message}`);
   }
 }
