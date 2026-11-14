@@ -16,6 +16,21 @@ Site: https://jim-maar.github.io/factcheck-taste-benchmark/ (shared password). E
 
 The env file is `~/dev/env/factcheck-taste-benchmark/env`, linked as `.env` into each checkout.
 
+## Build and run the site
+
+You need [Bun](https://bun.sh). The site reads the database through two public variables, `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (copy `.env.example` to `.env` and fill it in, or link the shared env file above).
+
+```bash
+bun install
+bun run dev      # dev server at http://localhost:5173/
+bun run build    # production build into dist/
+bun run check    # typecheck, lint and tests
+```
+
+For a build served under a sub-path, as on GitHub Pages, set `BASE_PATH`: `BASE_PATH=/factcheck-taste-benchmark/ bun run build`. The deploy workflow (`.github/workflows/pages.yml`) does this on every push to `main`, taking the two variables from the repository's Actions variables.
+
+Building the data behind the site (the notes in the database) is a separate step: see the import below.
+
 ## The import
 
 It copies the notes into the database and never touches verdicts or labels, so it can run again at any time. Run it from the repository root, under a memory cap, because the VPS has little memory to spare:

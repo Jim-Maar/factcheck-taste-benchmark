@@ -7,3 +7,4 @@ data/
 .DS_Store
 .eslintcache
 supabase/.temp/
+!.env.example
