@@ -2,10 +2,10 @@ import { useState } from "react";
 import type { CnNote } from "@cn/core/taste";
 import type { ProjectHeader } from "@cn/core/types";
 import { LabelRow } from "@cn/features/notes/LabelRow";
-import { NoteBox } from "@cn/features/notes/NoteBox";
+import { NoteBox, RatingPanel } from "@cn/features/notes/NoteBox";
 import { hasNoteSide, NoteSide } from "@cn/features/notes/NoteSide";
 import { useLabelling } from "@cn/features/notes/useLabelling";
-import { VerdictPills } from "@cn/features/notes/VerdictPills";
+import { AccuracyPills, VerdictPills } from "@cn/features/notes/VerdictPills";
 import { Button } from "@cn/ui/Button";
 import { QuoteIcon } from "@cn/ui/icons";
 import { ClaimCard } from "../../components/ClaimCard";
@@ -50,7 +50,7 @@ function CreatorByline({ card }: { card: CnNote }) {
  *  its post, the note with its status and sources, and in place of the rating
  *  pills the verdict, then the labels where the website has its actions. */
 export function CnNoteCard({ card }: { card: CnNote }) {
-  const { setVerdict } = useLabelling("commonnotes");
+  const { setVerdict, setAccuracy } = useLabelling("commonnotes");
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
   const { note } = card;
@@ -59,6 +59,9 @@ export function CnNoteCard({ card }: { card: CnNote }) {
       <NoteBox note={note} status={card.ratingStatus} sourcesOpen={sourcesOpen} byline={`${WRITER_NAMES[card.writer]} · ${new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`} question={<span className="font-semibold">Taste failure?</span>}>
         <VerdictPills verdict={card.verdict} onChange={(verdict) => setVerdict(note.id, verdict)} />
       </NoteBox>
+      <RatingPanel question={<span className="font-semibold">Accurate?</span>}>
+        <AccuracyPills accuracy={card.accuracy} onChange={(accuracy) => setAccuracy(note.id, accuracy)} />
+      </RatingPanel>
       <p className="mt-2 text-xs text-fg-muted">
         Votes on commonnotes.net: {note.helpful_count} helpful, {note.somewhat_helpful_count} somewhat, {note.not_helpful_count} not helpful
         {card.pHelpful !== null && ` · ${Math.round(card.pHelpful * 100)}% chance of ending helpful`}

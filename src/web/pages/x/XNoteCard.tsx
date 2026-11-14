@@ -5,7 +5,7 @@ import { LabelRow } from "@cn/features/notes/LabelRow";
 import { RatingPanel, StatusBadge } from "@cn/features/notes/NoteBox";
 import { hasNoteSide, NoteSide } from "@cn/features/notes/NoteSide";
 import { useLabelling } from "@cn/features/notes/useLabelling";
-import { VerdictPills } from "@cn/features/notes/VerdictPills";
+import { AccuracyPills, VerdictPills } from "@cn/features/notes/VerdictPills";
 import { Button } from "@cn/ui/Button";
 import { Card } from "@cn/ui/Card";
 import { chipVariants } from "@cn/ui/Chip";
@@ -109,7 +109,7 @@ function OtherNotes({ notes }: { notes: XNote["otherNotes"] }) {
  *  data, then the verdict and the labels. Adapted from commonnotes.net's X
  *  notewriter page. */
 function XNoteBody({ note, onAddComment }: { note: XNote; onAddComment?: () => void }) {
-  const { setVerdict } = useLabelling("x");
+  const { setVerdict, setAccuracy } = useLabelling("x");
   const written = new Date(note.written).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return (
     <Card className="mx-auto w-full max-w-[40rem] p-4 xl:mx-0 xl:max-w-none">
@@ -134,6 +134,9 @@ function XNoteBody({ note, onAddComment }: { note: XNote; onAddComment?: () => v
         <XRatings ratings={note.ratings} />
       </RatingPanel>
       <OtherNotes notes={note.otherNotes} />
+      <RatingPanel question={<span className="font-semibold">Accurate?</span>}>
+        <AccuracyPills accuracy={note.accuracy} onChange={(accuracy) => setAccuracy(note.noteId, accuracy)} />
+      </RatingPanel>
       <RatingPanel question={<span className="font-semibold">Taste failure?</span>}>
         <VerdictPills verdict={note.verdict} onChange={(verdict) => setVerdict(note.noteId, verdict)} />
       </RatingPanel>

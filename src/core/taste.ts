@@ -15,6 +15,9 @@ export const NOTE_PAGE_SIZE = 10;
 /** A note's verdict. A note nobody judged has none. */
 export type Verdict = "taste_failure" | "somewhat" | "fine" | "unsure";
 
+/** Whether a note is factually correct, judged apart from its taste. */
+export type Accuracy = "correct" | "partly" | "wrong" | "unsure";
+
 export interface Label {
   id: number;
   name: string;
@@ -84,6 +87,7 @@ export interface XNote {
   /** The other notes on the same post, by anyone. */
   otherNotes: { noteId: string; text: string; status: NoteStatus; isAi: boolean }[];
   verdict: Verdict | null;
+  accuracy: Accuracy | null;
   labels: Label[];
   ai: AiReview | null;
   comment: NoteComment | null;
@@ -100,6 +104,7 @@ export interface CnNote {
   views: number;
   project: ProjectHeader | null;
   verdict: Verdict | null;
+  accuracy: Accuracy | null;
   labels: Label[];
   ai: AiReview | null;
   comment: NoteComment | null;
@@ -201,6 +206,14 @@ export async function saveVerdict(source: Source, noteId: string, verdict: Verdi
   const { error } = verdict
     ? await supabase.from("verdicts").upsert({ source, note_id: noteId, verdict, updated_at: new Date().toISOString() })
     : await supabase.from("verdicts").delete().match({ source, note_id: noteId });
+  if (error) throw error;
+}
+
+/** Sets a note's accuracy, or clears it with null. */
+export async function saveAccuracy(source: Source, noteId: string, accuracy: Accuracy | null): Promise<void> {
+  const { error } = accuracy
+    ? await supabase.from("accuracy").upsert({ source, note_id: noteId, accuracy, updated_at: new Date().toISOString() })
+    : await supabase.from("accuracy").delete().match({ source, note_id: noteId });
   if (error) throw error;
 }
 

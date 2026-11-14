@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cva } from "class-variance-authority";
-import type { Verdict } from "@cn/core/taste";
+import type { Accuracy, Verdict } from "@cn/core/taste";
 import { cn } from "@cn/ui/cn";
 import { focusRing } from "@cn/ui/focusRing";
 import { CheckIcon, CloseIcon } from "@cn/ui/icons";
@@ -9,7 +9,8 @@ import { CheckIcon, CloseIcon } from "@cn/ui/icons";
  * (VoteRatings in cn-return-bot, in its colourful palette). Yes means the note
  * is a taste failure, so it takes the red of a Not helpful rating, and No the
  * green of a Helpful one. Somewhat takes the amber of a Somewhat helpful
- * rating, and Unsure stays grey. */
+ * rating, and Unsure stays grey. The accuracy pills use the same colours:
+ * Correct green, Partly amber, Wrong red. */
 const verdictPillVariants = cva(
   cn("inline-flex h-9 items-center justify-center gap-1.5 rounded-control border px-4 text-sm font-semibold transition-colors [@media(pointer:coarse)]:min-h-10 disabled:opacity-60", focusRing),
   {
@@ -43,34 +44,64 @@ const VERDICT_OPTIONS = [
   { value: "unsure", label: "Unsure", meaning: "Not sure whether it is a taste failure", tone: "neutral", icon: null },
 ] as const satisfies readonly { value: Verdict; label: string; meaning: string; tone: string; icon: React.ReactNode }[];
 
-/** The two verdict pills. Clicking the chosen pill again clears the verdict.
- *  While a click is being saved both pills wait. */
-export function VerdictPills({ verdict, onChange }: { verdict: Verdict | null; onChange: (verdict: Verdict | null) => Promise<void> }) {
+const ACCURACY_OPTIONS = [
+  { value: "correct", label: "Correct", meaning: "The note is factually correct", tone: "positive", icon: <CheckIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
+  { value: "partly", label: "Partly", meaning: "The note is partly correct", tone: "caution", icon: null },
+  { value: "wrong", label: "Wrong", meaning: "The note is factually wrong", tone: "negative", icon: <CloseIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
+  { value: "unsure", label: "Unsure", meaning: "Not sure whether the note is correct", tone: "neutral", icon: null },
+] as const satisfies readonly { value: Accuracy; label: string; meaning: string; tone: string; icon: React.ReactNode }[];
+
+type PillOption<T extends string> = { value: T; label: string; meaning: string; tone: "positive" | "negative" | "caution" | "neutral"; icon: React.ReactNode };
+
+/** A row of pills for one answer. Clicking the chosen pill again clears it.
+ *  While a click is being saved every pill waits. A save that fails leaves
+ *  the answer as it was and says so beside the pills. */
+function ChoicePills<T extends string>({ options, value: chosen, onChange }: { options: readonly PillOption<T>[]; value: T | null; onChange: (value: T | null) => Promise<void> }) {
   const [saving, setSaving] = useState(false);
-  const choose = async (value: Verdict) => {
+  const [failed, setFailed] = useState(false);
+  const choose = async (value: T) => {
     setSaving(true);
+    setFailed(false);
     try {
-      await onChange(verdict === value ? null : value);
+      await onChange(chosen === value ? null : value);
+    } catch (error) {
+      console.error(error);
+      setFailed(true);
     } finally {
       setSaving(false);
     }
   };
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
-      {VERDICT_OPTIONS.map(({ value, label, meaning, tone, icon }) => (
+      {options.map(({ value, label, meaning, tone, icon }) => (
         <button
           key={value}
           type="button"
           disabled={saving}
-          aria-pressed={verdict === value}
+          aria-pressed={chosen === value}
           aria-label={`${label}, ${meaning.toLowerCase()}`}
           onClick={() => void choose(value)}
-          className={verdictPillVariants({ tone, selected: verdict === value })}
+          className={verdictPillVariants({ tone, selected: chosen === value })}
         >
-          {verdict === value && icon}
+          {chosen === value && icon}
           {label}
         </button>
       ))}
+      {failed && (
+        <span role="alert" className="text-xs text-negative">
+          Not saved. Try again.
+        </span>
+      )}
     </span>
   );
+}
+
+/** The answer to "Taste failure?". */
+export function VerdictPills({ verdict, onChange }: { verdict: Verdict | null; onChange: (verdict: Verdict | null) => Promise<void> }) {
+  return <ChoicePills options={VERDICT_OPTIONS} value={verdict} onChange={onChange} />;
+}
+
+/** The answer to "Accurate?", asked apart from taste. */
+export function AccuracyPills({ accuracy, onChange }: { accuracy: Accuracy | null; onChange: (accuracy: Accuracy | null) => Promise<void> }) {
+  return <ChoicePills options={ACCURACY_OPTIONS} value={accuracy} onChange={onChange} />;
 }

@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import { addNoteLabel, createLabel, saveComment, type AiReview, type NoteComment, fetchLabels, removeNoteLabel, saveVerdict, type Label, type PagedCard, type Source, type Verdict } from "@cn/core/taste";
+import { addNoteLabel, saveAccuracy, type Accuracy, createLabel, saveComment, type AiReview, type NoteComment, fetchLabels, removeNoteLabel, saveVerdict, type Label, type PagedCard, type Source, type Verdict } from "@cn/core/taste";
 import { queryKeys } from "../query/queryKeys";
 
 /** Every label, most used first. */
 export const useLabels = () => useQuery({ queryKey: queryKeys.labels, queryFn: fetchLabels });
 
-type CardPatch = { verdict?: Verdict | null; labels?: Label[]; ai?: AiReview | null; comment?: NoteComment | null };
+type CardPatch = { verdict?: Verdict | null; accuracy?: Accuracy | null; labels?: Label[]; ai?: AiReview | null; comment?: NoteComment | null };
 
 /** Changes one note's card in every loaded page of its tab, so the card shows
  *  a write at once. The lists themselves are not reloaded. A reload would move
@@ -37,6 +37,10 @@ export function useLabelling(source: Source) {
     patchCard(client, source, noteId, () => ({ verdict }));
     refreshCounts(client, source);
   };
+  const setAccuracy = async (noteId: string, accuracy: Accuracy | null) => {
+    await saveAccuracy(source, noteId, accuracy);
+    patchCard(client, source, noteId, () => ({ accuracy }));
+  };
   const addLabel = async (noteId: string, label: Label) => {
     await addNoteLabel(source, noteId, label.id);
     patchCard(client, source, noteId, (card) => ({ labels: [...card.labels.filter((l) => l.id !== label.id), label].sort((a, b) => a.name.localeCompare(b.name)) }));
@@ -52,5 +56,5 @@ export function useLabelling(source: Source) {
     const comment = await saveComment(source, noteId, text);
     patchCard(client, source, noteId, () => ({ comment }));
   };
-  return { setVerdict, addLabel, removeLabel, createAndAddLabel, setComment };
+  return { setVerdict, setAccuracy, addLabel, removeLabel, createAndAddLabel, setComment };
 }
