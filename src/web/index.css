@@ -1,0 +1,8 @@
+@import "../ui/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Native controls such as checkboxes follow the site's dark theme. */
+html.dark { color-scheme: dark; }

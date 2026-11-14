@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "types": ["bun", "node"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // The layers copied from commonnotes.net keep their import names.
+    // vite.config.ts holds the same mapping for the bundler.
+    "paths": {
+      "@cn/core/*": ["./src/core/*"],
+      "@cn/ui/*": ["./src/ui/*"],
+      "@cn/features/*": ["./src/features/*"],
+      "@cn/shared/*": ["./src/shared/*"]
+    }
+  },
+  "include": ["src", "scripts", "vite.config.ts", "tailwind.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

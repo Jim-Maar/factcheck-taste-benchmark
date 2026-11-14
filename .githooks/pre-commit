@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Runs the type check, the linter and the tests before every commit.
+# Turn it on in a checkout with: git config core.hooksPath .githooks
+set -euo pipefail
+bun run check
