@@ -87,15 +87,17 @@ export interface NoteCards {
   commonnotes: CnNote;
 }
 
-/** A card of either tab, with the sort key the next page starts after. */
+/** A card of either tab, with the sort key the next page starts after. The
+ *  key's numbers stay text, because a JSON number would round them and the
+ *  next page would then repeat or skip a card. */
 export interface PagedCard<S extends Source> {
   noteId: string;
-  sortKey: number[];
+  sortKey: string[];
   card: NoteCards[S];
 }
 
 export interface NoteCursor {
-  key: number[];
+  key: string[];
   id: string;
 }
 
@@ -114,7 +116,7 @@ export async function fetchNotePage<S extends Source>(source: S, request: NoteRe
     p_limit: NOTE_PAGE_SIZE,
   });
   if (error) throw error;
-  return (data as { note_id: string; sort_key: number[]; card: NoteCards[S] }[]).map((row) => ({ noteId: row.note_id, sortKey: row.sort_key, card: row.card }));
+  return (data as { note_id: string; sort_key: string[]; card: NoteCards[S] }[]).map((row) => ({ noteId: row.note_id, sortKey: row.sort_key, card: row.card }));
 }
 
 export interface NoteSummary {
