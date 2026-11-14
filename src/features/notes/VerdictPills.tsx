@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cva } from "class-variance-authority";
-import type { Accuracy, Verdict } from "@cn/core/taste";
+import { isDatabaseOutdated, type Accuracy, type Verdict } from "@cn/core/taste";
 import { cn } from "@cn/ui/cn";
 import { focusRing } from "@cn/ui/focusRing";
 import { CheckIcon, CloseIcon } from "@cn/ui/icons";
@@ -55,18 +55,19 @@ type PillOption<T extends string> = { value: T; label: string; meaning: string; 
 
 /** A row of pills for one answer. Clicking the chosen pill again clears it.
  *  While a click is being saved every pill waits. A save that fails leaves
- *  the answer as it was and says so beside the pills. */
+ *  the answer as it was and says why beside the pills: an outdated database
+ *  will not be fixed by trying again. */
 function ChoicePills<T extends string>({ options, value: chosen, onChange }: { options: readonly PillOption<T>[]; value: T | null; onChange: (value: T | null) => Promise<void> }) {
   const [saving, setSaving] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   const choose = async (value: T) => {
     setSaving(true);
-    setFailed(false);
+    setFailure(null);
     try {
       await onChange(chosen === value ? null : value);
     } catch (error) {
       console.error(error);
-      setFailed(true);
+      setFailure(isDatabaseOutdated(error) ? "Not saved: the database is out of date. Ask whoever manages it to apply the latest migration." : "Not saved. Try again.");
     } finally {
       setSaving(false);
     }
@@ -87,9 +88,9 @@ function ChoicePills<T extends string>({ options, value: chosen, onChange }: { o
           {label}
         </button>
       ))}
-      {failed && (
+      {failure && (
         <span role="alert" className="text-xs text-negative">
-          Not saved. Try again.
+          {failure}
         </span>
       )}
     </span>

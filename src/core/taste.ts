@@ -201,6 +201,14 @@ export async function fetchLabels(): Promise<LabelUse[]> {
   return (data as { id: number; name: string; uses: number }[]).map((row) => ({ id: row.id, name: row.name, uses: Number(row.uses) }));
 }
 
+/** Whether a write failed because the database lacks a table the page
+ *  expects: the page is newer than the database, whose migrations are not
+ *  all applied yet. */
+export function isDatabaseOutdated(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return code === "PGRST205" || code === "42P01";
+}
+
 /** Sets a note's verdict, or clears it with null. */
 export async function saveVerdict(source: Source, noteId: string, verdict: Verdict | null): Promise<void> {
   const { error } = verdict
