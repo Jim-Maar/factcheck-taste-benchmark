@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "tailwindcss";
 
-const folder = (name: string) => path.resolve(__dirname, name);
+const folder = (name: string) => path.resolve(import.meta.dirname, name);
 
 /* GitHub Pages serves the site under /factcheck-taste-benchmark/, so the
  * deploy workflow sets BASE_PATH. Local development serves it at /. */
