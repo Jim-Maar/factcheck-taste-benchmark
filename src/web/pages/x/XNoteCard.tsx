@@ -108,11 +108,11 @@ function OtherNotes({ notes }: { notes: XNote["otherNotes"] }) {
  *  top, then the note with X's status line and the ratings from X's public
  *  data, then the verdict and the labels. Adapted from commonnotes.net's X
  *  notewriter page. */
-export function XNoteCard({ note }: { note: XNote }) {
+function XNoteBody({ note }: { note: XNote }) {
   const { setVerdict } = useLabelling("x");
   const written = new Date(note.written).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return (
-    <Card className="mx-auto w-full max-w-[40rem] p-4">
+    <Card className="mx-auto w-full max-w-[40rem] p-4 xl:mx-0 xl:max-w-none">
       <div className="mb-4">
         <XPostCard post={note.post} />
       </div>
@@ -134,11 +134,22 @@ export function XNoteCard({ note }: { note: XNote }) {
         <XRatings ratings={note.ratings} />
       </RatingPanel>
       <OtherNotes notes={note.otherNotes} />
-      {note.ai && <AiReviewPanel review={note.ai} />}
       <RatingPanel question={<span className="font-semibold">Taste failure?</span>}>
         <VerdictPills verdict={note.verdict} onChange={(verdict) => setVerdict(note.noteId, verdict)} />
       </RatingPanel>
       <LabelRow source="x" noteId={note.noteId} labels={note.labels} />
     </Card>
+  );
+}
+
+/** The note's card, and its AI review beside it on a wide screen or below it
+ *  on a narrow one. Every card keeps the same column, whether it has a review
+ *  or not, so the cards line up. */
+export function XNoteCard({ note }: { note: XNote }) {
+  return (
+    <div className="items-start space-y-4 xl:grid xl:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] xl:gap-4 xl:space-y-0">
+      <XNoteBody note={note} />
+      {note.ai && <AiReviewPanel review={note.ai} className="mx-auto w-full max-w-[40rem] xl:mx-0 xl:max-w-none" />}
+    </div>
   );
 }

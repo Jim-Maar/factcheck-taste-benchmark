@@ -8,11 +8,12 @@ const RECOMMENDATION = {
 } as const;
 
 /** The AI reviewer's explanation of what is going on, and the verdict it
- *  recommends with its reasons. The reader's own verdict stays separate. */
-export function AiReviewPanel({ review }: { review: AiReview }) {
+ *  recommends with its reasons. It sits beside the note's card, so the card
+ *  itself shows only the note and the reader's own verdict. */
+export function AiReviewPanel({ review, className }: { review: AiReview; className?: string }) {
   const { label, tone } = RECOMMENDATION[review.recommendation];
   return (
-    <section aria-label="AI explanation" className="mt-3 rounded-card border border-line bg-surface-muted p-3">
+    <section aria-label="AI explanation" className={cn("rounded-card border border-line bg-surface-muted p-4", className)}>
       <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-xs font-semibold text-fg-secondary">AI explanation</h3>
         <span className="text-xs text-fg-muted">{review.model}</span>

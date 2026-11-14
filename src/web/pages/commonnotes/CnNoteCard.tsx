@@ -54,7 +54,7 @@ export function CnNoteCard({ card }: { card: CnNote }) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const { note } = card;
   return (
-    <ClaimCard id={`note-${note.id}`} claim={note.claim} paragraph={note.claim.context_paragraph} post={card.post} byline={<CreatorByline card={card} />}>
+    <ClaimCard id={`note-${note.id}`} claim={note.claim} paragraph={note.claim.context_paragraph} post={card.post} byline={<CreatorByline card={card} />} aside={card.ai && <AiReviewPanel review={card.ai} />}>
       <NoteBox note={note} status={card.ratingStatus} sourcesOpen={sourcesOpen} byline={`${WRITER_NAMES[card.writer]} · ${new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`} question={<span className="font-semibold">Taste failure?</span>}>
         <VerdictPills verdict={card.verdict} onChange={(verdict) => setVerdict(note.id, verdict)} />
       </NoteBox>
@@ -62,7 +62,6 @@ export function CnNoteCard({ card }: { card: CnNote }) {
         Votes on commonnotes.net: {note.helpful_count} helpful, {note.somewhat_helpful_count} somewhat, {note.not_helpful_count} not helpful
         {card.pHelpful !== null && ` · ${Math.round(card.pHelpful * 100)}% chance of ending helpful`}
       </p>
-      {card.ai && <AiReviewPanel review={card.ai} />}
       <LabelRow source="commonnotes" noteId={note.id} labels={card.labels}>
         {note.has_source_details && (
           <Button variant="link" className={TOUCH_TARGET} aria-expanded={sourcesOpen} onClick={() => setSourcesOpen((open) => !open)}>
