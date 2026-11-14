@@ -5,7 +5,7 @@ import { chipVariants } from "@cn/ui/Chip";
 import { cn } from "@cn/ui/cn";
 import { DropdownMenu } from "@cn/ui/DropdownMenu";
 import { focusRing } from "@cn/ui/focusRing";
-import { AddIcon, CloseIcon } from "@cn/ui/icons";
+import { AddIcon, CloseIcon, SpeechBubbleIcon } from "@cn/ui/icons";
 import { useLabelling, useLabels } from "./useLabelling";
 
 /* The row under a note, where commonnotes.net has its actions (NoteMenu in
@@ -31,10 +31,12 @@ function LabelChip({ label, onRemove }: { label: Label; onRemove: () => void }) 
   );
 }
 
-/** The labels of one note and the Add label menu. Its search box finds a label
- *  by name, and typing a name nobody used yet offers to create it. `children`
- *  come first in the row, such as the Source details button. */
-export function LabelRow({ source, noteId, labels, children }: { source: Source; noteId: string; labels: Label[]; children?: ReactNode }) {
+/** The labels of one note, the Add comment button and the Add label menu. The
+ *  menu's search box finds a label by name, and typing a name nobody used yet
+ *  offers to create it. `children` come first in the row, such as the Source
+ *  details button. Without `onAddComment` the row has no Add comment button,
+ *  because the note's comment is already open. */
+export function LabelRow({ source, noteId, labels, onAddComment, children }: { source: Source; noteId: string; labels: Label[]; onAddComment?: () => void; children?: ReactNode }) {
   const allLabels = useLabels().data ?? [];
   const { addLabel, removeLabel, createAndAddLabel } = useLabelling(source);
   const onNote = new Set(labels.map((label) => String(label.id)));
@@ -52,6 +54,11 @@ export function LabelRow({ source, noteId, labels, children }: { source: Source;
       {labels.map((label) => (
         <LabelChip key={label.id} label={label} onRemove={() => void removeLabel(noteId, label)} />
       ))}
+      {onAddComment && (
+        <Button variant="link" className={TOUCH_TARGET} onClick={onAddComment}>
+          <SpeechBubbleIcon size={ACTION_ICON_SIZE} aria-hidden /> Add comment
+        </Button>
+      )}
       <DropdownMenu
         label="Labels"
         entries={[

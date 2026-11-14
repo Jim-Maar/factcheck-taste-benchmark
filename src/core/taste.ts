@@ -38,6 +38,12 @@ export interface XMedia {
   variants?: { url: string; bit_rate?: number; content_type: string }[];
 }
 
+/** The one comment on a note, which every labeller can change. */
+export interface NoteComment {
+  text: string;
+  updatedAt: string;
+}
+
 /** One rated note of an AI notewriter on X, with the post it is on. */
 export interface XNote {
   noteId: string;
@@ -77,6 +83,7 @@ export interface XNote {
   verdict: Verdict | null;
   labels: Label[];
   ai: AiReview | null;
+  comment: NoteComment | null;
 }
 
 /** One note of commonnotes.net, in the shapes the website's own card reads. */
@@ -92,6 +99,7 @@ export interface CnNote {
   verdict: Verdict | null;
   labels: Label[];
   ai: AiReview | null;
+  comment: NoteComment | null;
 }
 
 export interface NoteCards {
@@ -191,6 +199,21 @@ export async function saveVerdict(source: Source, noteId: string, verdict: Verdi
     ? await supabase.from("verdicts").upsert({ source, note_id: noteId, verdict, updated_at: new Date().toISOString() })
     : await supabase.from("verdicts").delete().match({ source, note_id: noteId });
   if (error) throw error;
+}
+
+/** Sets a note's comment, or removes it when the text is empty. Returns the
+ *  comment as the card shows it. */
+export async function saveComment(source: Source, noteId: string, text: string): Promise<NoteComment | null> {
+  const comment = text.trim();
+  if (!comment) {
+    const { error } = await supabase.from("note_comments").delete().match({ source, note_id: noteId });
+    if (error) throw error;
+    return null;
+  }
+  const updatedAt = new Date().toISOString();
+  const { error } = await supabase.from("note_comments").upsert({ source, note_id: noteId, comment, updated_at: updatedAt });
+  if (error) throw error;
+  return { text: comment, updatedAt };
 }
 
 const UNIQUE_VIOLATION = "23505";

@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import { addNoteLabel, createLabel, type AiReview, fetchLabels, removeNoteLabel, saveVerdict, type Label, type PagedCard, type Source, type Verdict } from "@cn/core/taste";
+import { addNoteLabel, createLabel, saveComment, type AiReview, type NoteComment, fetchLabels, removeNoteLabel, saveVerdict, type Label, type PagedCard, type Source, type Verdict } from "@cn/core/taste";
 import { queryKeys } from "../query/queryKeys";
 
 /** Every label, most used first. */
 export const useLabels = () => useQuery({ queryKey: queryKeys.labels, queryFn: fetchLabels });
 
-type CardPatch = { verdict?: Verdict | null; labels?: Label[]; ai?: AiReview | null };
+type CardPatch = { verdict?: Verdict | null; labels?: Label[]; ai?: AiReview | null; comment?: NoteComment | null };
 
 /** Changes one note's card in every loaded page of its tab, so the card shows
  *  a write at once. The lists themselves are not reloaded. A reload would move
@@ -48,5 +48,9 @@ export function useLabelling(source: Source) {
     refreshCounts(client, source);
   };
   const createAndAddLabel = async (noteId: string, name: string) => addLabel(noteId, await createLabel(name));
-  return { setVerdict, addLabel, removeLabel, createAndAddLabel };
+  const setComment = async (noteId: string, text: string) => {
+    const comment = await saveComment(source, noteId, text);
+    patchCard(client, source, noteId, () => ({ comment }));
+  };
+  return { setVerdict, addLabel, removeLabel, createAndAddLabel, setComment };
 }
