@@ -27,6 +27,17 @@ export async function* zipLines(zipPath: string): AsyncGenerator<string> {
   }
 }
 
+/** A copy of a string that shares no memory with the text it was cut from.
+ *  Bun's engine often makes a cut-out string, such as a field of a line,
+ *  point into the whole chunk of the file it came from. One kept note id then
+ *  keeps a whole chunk alive. Over a file of gigabytes that grew the X import
+ *  past 4 GB, and the out-of-memory killer ended it. So everything the import
+ *  keeps goes through this copy. */
+export const detached = (text: string): string => Buffer.from(text, "utf8").toString("utf8");
+
+/** How much memory the process holds, for the progress lines. */
+export const residentMemory = (): string => `${Math.round(process.memoryUsage().rss / 1_000_000)} MB`;
+
 /** The first field of a line, which is the note id in every file. Reading
  *  only this lets a pass skip the rows it does not need without splitting
  *  them. */

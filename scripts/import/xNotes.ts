@@ -1,7 +1,7 @@
 import { readdirSync } from "fs";
 import { join } from "path";
 import { target, upsertRows } from "./db";
-import { firstField, zipHeader, zipRows, type Row } from "./tsv";
+import { detached, firstField, residentMemory, zipHeader, zipRows, type Row } from "./tsv";
 
 /* The X tab's notes, from X's public Community Notes data only: every note by
  * an AI notewriter that is rated helpful or rated not helpful, with its
@@ -63,17 +63,18 @@ async function upsertNotewriters(authorIds: Set<string>): Promise<void> {
   await upsertRows("x_notewriters", rows, "author_id", true);
 }
 
-/** The status of every note that is not plain "needs more ratings", and for
- *  the AI notewriters' notes also when they were first rated. Storing only
- *  the decided notes keeps the map small. */
+/** The status of every note whose status is decided, and for the AI
+ *  notewriters' notes also when they were first rated. A note missing from
+ *  the map needs more ratings. Storing only the decided notes keeps the map
+ *  small. */
 async function readStatuses(dumpDir: string, aiAuthors: Set<string>): Promise<Map<string, StatusEntry>> {
   const statuses = new Map<string, StatusEntry>();
   for (const file of dumpFiles(dumpDir, "noteStatusHistory")) {
     for await (const row of zipRows(file)) {
       const status = toStatus(row("currentStatus"));
+      if (status === "needs_ratings") continue;
       const isAi = aiAuthors.has(row("noteAuthorParticipantId"));
-      if (status === "needs_ratings" && !isAi) continue;
-      statuses.set(row("noteId"), { status, ratedAt: isAi ? millisToIso(row("timestampMillisOfFirstNonNMRStatus")) : null });
+      statuses.set(detached(row("noteId")), { status, ratedAt: isAi ? millisToIso(row("timestampMillisOfFirstNonNMRStatus")) : null });
     }
   }
   return statuses;
@@ -82,19 +83,19 @@ async function readStatuses(dumpDir: string, aiAuthors: Set<string>): Promise<Ma
 /** The names of the writer's own answer columns that are ticked, such as
  *  misleadingFactualError. */
 function writerReasons(row: Row, header: string[]): string[] {
-  return header.filter((column) => WRITER_REASON_PREFIXES.some((prefix) => column.startsWith(prefix)) && row(column) === "1");
+  return header.filter((column) => WRITER_REASON_PREFIXES.some((prefix) => column.startsWith(prefix)) && row(column) === "1").map(detached);
 }
 
 function noteRow(row: Row, header: string[], status: StatusEntry, dumpDate: string) {
   return {
-    note_id: row("noteId"),
-    tweet_id: row("tweetId"),
-    author_id: row("noteAuthorParticipantId"),
-    note_text: row("summary"),
+    note_id: detached(row("noteId")),
+    tweet_id: detached(row("tweetId")),
+    author_id: detached(row("noteAuthorParticipantId")),
+    note_text: detached(row("summary")),
     written: millisToIso(row("createdAtMillis")),
     status: status.status,
     rated_at: status.ratedAt,
-    classification: row("classification") || null,
+    classification: detached(row("classification")) || null,
     writer_reasons: writerReasons(row, header),
     trustworthy_sources: row("trustworthySources") === "1",
     media_note: row("isMediaNote") === "1",
@@ -144,10 +145,11 @@ async function readNotesOnPosts(dumpDir: string, tweetIds: Set<string>, aiAuthor
     for await (const row of zipRows(file)) {
       const tweetId = row("tweetId");
       if (!tweetIds.has(tweetId)) continue;
-      const noteId = row("noteId");
-      const note = { noteId, text: row("summary"), status: statuses.get(noteId)?.status ?? "needs_ratings", isAi: aiAuthors.has(row("noteAuthorParticipantId")) };
-      if (!byTweet.has(tweetId)) byTweet.set(tweetId, []);
-      byTweet.get(tweetId)!.push(note);
+      const noteId = detached(row("noteId"));
+      const note = { noteId, text: detached(row("summary")), status: statuses.get(noteId)?.status ?? "needs_ratings", isAi: aiAuthors.has(row("noteAuthorParticipantId")) };
+      const key = detached(tweetId);
+      if (!byTweet.has(key)) byTweet.set(key, []);
+      byTweet.get(key)!.push(note);
     }
   }
   return byTweet;
@@ -188,10 +190,10 @@ async function readRatings(dumpDir: string, noteIds: Set<string>): Promise<Map<s
     const helpfulTags = header.filter((column) => column.startsWith("helpful") && !NON_TAG_RATING_COLUMNS.has(column));
     for await (const row of zipRows(file, (line) => noteIds.has(firstField(line)))) {
       const noteId = row("noteId");
-      if (!ratings.has(noteId)) ratings.set(noteId, emptyRatings());
+      if (!ratings.has(noteId)) ratings.set(detached(noteId), emptyRatings());
       countRating(ratings.get(noteId)!, row, helpfulTags, notHelpfulTags);
     }
-    console.log(`[x] ${file.split("/").at(-1)} read in ${Math.round((Date.now() - started) / 1000)}s`);
+    console.log(`[x] ${file.split("/").at(-1)} read in ${Math.round((Date.now() - started) / 1000)}s, ${residentMemory()} in use`);
   }
   return ratings;
 }
@@ -217,12 +219,13 @@ export async function importXNotes(dumpDir: string, dumpDate: string): Promise<v
   console.log(`[x] ${aiAuthors.size} AI notewriters`);
 
   const statuses = await readStatuses(dumpDir, aiAuthors);
-  console.log(`[x] ${statuses.size} statuses read`);
+  console.log(`[x] ${statuses.size} decided statuses read, ${residentMemory()} in use`);
   const existing = await existingNoteIds();
   const notes = await readKeptNotes(dumpDir, aiAuthors, statuses, existing, dumpDate);
-  console.log(`[x] ${notes.length} notes kept (${existing.size} were already copied)`);
+  console.log(`[x] ${notes.length} notes kept (${existing.size} were already copied), ${residentMemory()} in use`);
 
   const notesOnPosts = await readNotesOnPosts(dumpDir, new Set(notes.map((n) => n.tweet_id)), aiAuthors, statuses);
+  console.log(`[x] other notes read for ${notesOnPosts.size} posts, ${residentMemory()} in use`);
   const ratings = await readRatings(dumpDir, new Set(notes.map((n) => n.note_id)));
   console.log(`[x] ratings found for ${ratings.size} notes`);
 
