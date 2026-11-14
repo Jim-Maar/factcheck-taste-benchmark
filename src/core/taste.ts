@@ -13,18 +13,21 @@ export type Source = "x" | "commonnotes";
 export const NOTE_PAGE_SIZE = 10;
 
 /** A note's verdict. A note nobody judged has none. */
-export type Verdict = "taste_failure" | "fine";
+export type Verdict = "taste_failure" | "somewhat" | "fine" | "unsure";
 
 export interface Label {
   id: number;
   name: string;
 }
 
+/** The AI reviewer answers only yes or no. */
+export type AiRecommendation = Extract<Verdict, "taste_failure" | "fine">;
+
 /** An AI reviewer's account of a note: what is going on in the post and the
  *  note, and the verdict it recommends with its reasons. */
 export interface AiReview {
   explanation: string;
-  recommendation: Verdict;
+  recommendation: AiRecommendation;
   reasoning: string;
   model: string;
   createdAt: string;
@@ -234,7 +237,7 @@ interface AiReviewRow {
   source: Source;
   note_id: string;
   explanation: string;
-  recommendation: Verdict;
+  recommendation: AiRecommendation;
   reasoning: string;
   model: string;
   created_at: string;

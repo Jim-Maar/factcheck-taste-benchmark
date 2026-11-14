@@ -20,7 +20,9 @@ const VERDICT: FieldDef = {
   options: [
     { value: "unjudged", label: "Not judged" },
     { value: "taste_failure", label: "Taste failure" },
+    { value: "somewhat", label: "Somewhat a taste failure" },
     { value: "fine", label: "No taste failure" },
+    { value: "unsure", label: "Unsure" },
   ],
 };
 
