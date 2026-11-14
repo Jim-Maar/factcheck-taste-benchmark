@@ -12,6 +12,7 @@ Site: https://jim-maar.github.io/factcheck-taste-benchmark/ (shared password). E
 | `src/web` | The site: the two tabs, their cards and their filter fields. |
 | `supabase/migrations` | The `taste` schema, which lives in the Supabase project `epistemics-playground`. Apply a new file with `psql "$DATABASE_URL" -1 -f <file>`. |
 | `scripts/import` | The import of the notes. |
+| `scripts/ai` | The tool a Claude agent uses to read an X note and save its AI review (`latest`, `show`, `save`). The cards show a saved review at once. |
 
 The env file is `~/dev/env/factcheck-taste-benchmark/env`, linked as `.env` into each checkout.
 
