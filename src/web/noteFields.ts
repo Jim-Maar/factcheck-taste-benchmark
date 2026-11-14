@@ -26,6 +26,19 @@ const VERDICT: FieldDef = {
 
 const LABELS: FieldDef = { id: "labels", label: "Label", hint: "Notes with any of the picked labels. None keeps the notes without a label", kind: "choice", multiple: true, sortable: false };
 
+const AI_RECOMMENDATION: FieldDef = {
+  id: "ai_recommendation",
+  label: "AI recommendation",
+  kind: "choice",
+  multiple: true,
+  sortable: false,
+  options: [
+    { value: "taste_failure", label: "Taste failure" },
+    { value: "fine", label: "No taste failure" },
+    { value: "none", label: "No AI review yet" },
+  ],
+};
+
 const RANDOM: FieldDef = { id: "shuffle", label: "Random order", hint: "The same random order for everyone", kind: "percent", sortable: true, filterable: false };
 
 const WRITTEN: FieldDef = { id: "written", label: "Written", kind: "date", sortable: true };
@@ -34,6 +47,7 @@ export const NOTE_FIELDS: Record<Source, FieldDef[]> = {
   x: [
     VERDICT,
     LABELS,
+    AI_RECOMMENDATION,
     {
       id: "status",
       label: "Status",
@@ -99,6 +113,7 @@ export const NOTE_FIELDS: Record<Source, FieldDef[]> = {
   commonnotes: [
     VERDICT,
     LABELS,
+    AI_RECOMMENDATION,
     {
       id: "status",
       label: "Status",

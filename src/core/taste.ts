@@ -20,6 +20,16 @@ export interface Label {
   name: string;
 }
 
+/** An AI reviewer's account of a note: what is going on in the post and the
+ *  note, and the verdict it recommends with its reasons. */
+export interface AiReview {
+  explanation: string;
+  recommendation: Verdict;
+  reasoning: string;
+  model: string;
+  createdAt: string;
+}
+
 /** A photo, video or gif of a post, in the X API's shape. */
 export interface XMedia {
   type: string;
@@ -66,6 +76,7 @@ export interface XNote {
   otherNotes: { noteId: string; text: string; status: NoteStatus; isAi: boolean }[];
   verdict: Verdict | null;
   labels: Label[];
+  ai: AiReview | null;
 }
 
 /** One note of commonnotes.net, in the shapes the website's own card reads. */
@@ -80,6 +91,7 @@ export interface CnNote {
   project: ProjectHeader | null;
   verdict: Verdict | null;
   labels: Label[];
+  ai: AiReview | null;
 }
 
 export interface NoteCards {
@@ -193,6 +205,30 @@ export async function createLabel(name: string): Promise<Label> {
   const existing = await supabase.from("labels").select("id, name").ilike("name", trimmed.replace(/[\\%_]/g, "\\$&")).single();
   if (existing.error) throw existing.error;
   return existing.data as Label;
+}
+
+interface AiReviewRow {
+  source: Source;
+  note_id: string;
+  explanation: string;
+  recommendation: Verdict;
+  reasoning: string;
+  model: string;
+  created_at: string;
+}
+
+/** Calls `onReview` with every AI review of the tab that is written or
+ *  rewritten from now on, as Supabase Realtime reports it. Returns the
+ *  function that stops listening. */
+export function watchAiReviews(source: Source, onReview: (noteId: string, review: AiReview) => void): () => void {
+  const channel = supabase
+    .channel(`ai-reviews-${source}`)
+    .on<AiReviewRow>("postgres_changes", { event: "*", schema: "taste", table: "ai_reviews", filter: `source=eq.${source}` }, ({ new: row }) => {
+      if (!("note_id" in row)) return;
+      onReview(row.note_id, { explanation: row.explanation, recommendation: row.recommendation, reasoning: row.reasoning, model: row.model, createdAt: row.created_at });
+    })
+    .subscribe();
+  return () => void supabase.removeChannel(channel);
 }
 
 export async function addNoteLabel(source: Source, noteId: string, labelId: number): Promise<void> {

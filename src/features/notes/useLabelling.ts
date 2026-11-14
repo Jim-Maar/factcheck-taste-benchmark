@@ -1,17 +1,17 @@
 import { useQuery, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import { addNoteLabel, createLabel, fetchLabels, removeNoteLabel, saveVerdict, type Label, type PagedCard, type Source, type Verdict } from "@cn/core/taste";
+import { addNoteLabel, createLabel, type AiReview, fetchLabels, removeNoteLabel, saveVerdict, type Label, type PagedCard, type Source, type Verdict } from "@cn/core/taste";
 import { queryKeys } from "../query/queryKeys";
 
 /** Every label, most used first. */
 export const useLabels = () => useQuery({ queryKey: queryKeys.labels, queryFn: fetchLabels });
 
-type CardPatch = { verdict?: Verdict | null; labels?: Label[] };
+type CardPatch = { verdict?: Verdict | null; labels?: Label[]; ai?: AiReview | null };
 
 /** Changes one note's card in every loaded page of its tab, so the card shows
  *  a write at once. The lists themselves are not reloaded. A reload would move
  *  or drop the card under the reader, for example from a list of notes
  *  without a verdict. */
-function patchCard(client: QueryClient, source: Source, noteId: string, patch: (card: CardPatch & { labels: Label[] }) => CardPatch) {
+export function patchCard(client: QueryClient, source: Source, noteId: string, patch: (card: CardPatch & { labels: Label[] }) => CardPatch) {
   client.setQueriesData<InfiniteData<PagedCard<Source>[]>>({ queryKey: queryKeys.notes(source) }, (data) =>
     data && {
       ...data,

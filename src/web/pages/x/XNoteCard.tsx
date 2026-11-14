@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { humanizeTagName } from "@cn/core/ratingReasons";
 import type { XNote } from "@cn/core/taste";
+import { AiReviewPanel } from "@cn/features/notes/AiReviewPanel";
 import { LabelRow } from "@cn/features/notes/LabelRow";
 import { RatingPanel, StatusBadge } from "@cn/features/notes/NoteBox";
 import { useLabelling } from "@cn/features/notes/useLabelling";
@@ -133,6 +134,7 @@ export function XNoteCard({ note }: { note: XNote }) {
         <XRatings ratings={note.ratings} />
       </RatingPanel>
       <OtherNotes notes={note.otherNotes} />
+      {note.ai && <AiReviewPanel review={note.ai} />}
       <RatingPanel question={<span className="font-semibold">Taste failure?</span>}>
         <VerdictPills verdict={note.verdict} onChange={(verdict) => setVerdict(note.noteId, verdict)} />
       </RatingPanel>

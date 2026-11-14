@@ -4,6 +4,7 @@ import type { NoteCards, NoteRequest, Source } from "@cn/core/taste";
 import { FilterButton, FilterPills } from "@cn/features/fieldQuery/Filters";
 import { SortBar } from "@cn/features/fieldQuery/SortBar";
 import { useFieldQuery } from "@cn/features/fieldQuery/useFieldQuery";
+import { useLiveAiReviews } from "@cn/features/notes/useLiveAiReviews";
 import { LoadFailed } from "@cn/features/query/LoadFailed";
 import { PagedListEnd } from "@cn/features/query/PagedListEnd";
 import { Input } from "@cn/ui/Field";
@@ -75,6 +76,7 @@ export function NoteTab<S extends Source>({ source, fields, renderCard }: { sour
   const now = useMomentFor(JSON.stringify(query.filters));
   const request = useMemo<NoteRequest>(() => ({ ...buildRequest(fields, query, now), search }), [fields, query, now, search]);
   const facets = useNoteFacets(source, fields, request);
+  useLiveAiReviews(source);
   const filterProps = { fields, filters: query.filters, facets, onChange: (filters: typeof query.filters) => setQuery({ ...query, filters }) };
   return (
     <section className="space-y-4">

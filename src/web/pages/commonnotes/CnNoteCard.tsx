@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { CnNote } from "@cn/core/taste";
 import type { ProjectHeader } from "@cn/core/types";
+import { AiReviewPanel } from "@cn/features/notes/AiReviewPanel";
 import { LabelRow } from "@cn/features/notes/LabelRow";
 import { NoteBox } from "@cn/features/notes/NoteBox";
 import { useLabelling } from "@cn/features/notes/useLabelling";
@@ -61,6 +62,7 @@ export function CnNoteCard({ card }: { card: CnNote }) {
         Votes on commonnotes.net: {note.helpful_count} helpful, {note.somewhat_helpful_count} somewhat, {note.not_helpful_count} not helpful
         {card.pHelpful !== null && ` · ${Math.round(card.pHelpful * 100)}% chance of ending helpful`}
       </p>
+      {card.ai && <AiReviewPanel review={card.ai} />}
       <LabelRow source="commonnotes" noteId={note.id} labels={card.labels}>
         {note.has_source_details && (
           <Button variant="link" className={TOUCH_TARGET} aria-expanded={sourcesOpen} onClick={() => setSourcesOpen((open) => !open)}>
