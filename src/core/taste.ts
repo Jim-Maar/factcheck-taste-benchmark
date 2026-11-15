@@ -46,6 +46,19 @@ export interface XMedia {
   variants?: { url: string; bit_rate?: number; content_type: string }[];
 }
 
+/** A post shown inside another: the post it quotes, or one post of the
+ *  thread above it. `available` is false for a post X no longer has. */
+export interface XEmbeddedPost {
+  id?: string;
+  available?: boolean;
+  name?: string | null;
+  handle?: string | null;
+  postedAt?: string | null;
+  text?: string | null;
+  media?: XMedia[];
+  quoted?: XEmbeddedPost | null;
+}
+
 /** The one comment on a note, which every labeller can change. */
 export interface NoteComment {
   text: string;
@@ -83,8 +96,13 @@ export interface XNote {
     name: string | null;
     postedAt: string | null;
     media: XMedia[];
-    /** The post this one quotes or replies to. */
-    referenced: { kind: "quoted" | "replied_to" | "retweeted" | null; text?: string | null; media?: XMedia[] } | null;
+    /** The post this one quotes or replies to. Its author is known only for
+     *  posts the threads import has fetched. */
+    referenced: (XEmbeddedPost & { kind: "quoted" | "replied_to" | "retweeted" | null }) | null;
+    /** The posts above this one in its thread, oldest first. Missing until
+     *  the threads import has fetched it. `complete` is false when the thread
+     *  goes on further up than was fetched. */
+    thread?: { posts: XEmbeddedPost[]; complete: boolean } | null;
   };
   /** The other notes on the same post, by anyone. */
   otherNotes: { noteId: string; text: string; status: NoteStatus; isAi: boolean }[];

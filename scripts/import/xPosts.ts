@@ -30,7 +30,7 @@ interface PostRow {
   text?: string | null;
   posted_at?: string | null;
   media?: XMedia[];
-  referenced?: { text: string | null; media: XMedia[] } | null;
+  referenced?: { text: string | null; media: XMedia[] } | EmbeddedPost | null;
   referenced_kind?: string | null;
   fetched_at: string;
 }
@@ -146,6 +146,32 @@ export function displayText(tweet: SyndicationTweet): string {
   return text.replace(/&(amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }
 
+/** A post as a card shows it inside another: its author, date, text and
+ *  media, and what it quotes. */
+export interface EmbeddedPost {
+  id?: string;
+  available: boolean;
+  name: string | null;
+  handle: string | null;
+  postedAt: string | null;
+  text: string | null;
+  media: XMedia[];
+  quoted: EmbeddedPost | null;
+}
+
+export function embeddedPost(tweet: SyndicationTweet): EmbeddedPost {
+  return {
+    id: tweet.id_str,
+    available: true,
+    name: tweet.user?.name ?? null,
+    handle: tweet.user?.screen_name ?? null,
+    postedAt: tweet.created_at ?? null,
+    text: displayText(tweet),
+    media: (tweet.mediaDetails ?? []).map(toXMedia),
+    quoted: tweet.quoted_tweet ? embeddedPost(tweet.quoted_tweet) : null,
+  };
+}
+
 function syndicationToRow(tweetId: string, tweet: SyndicationTweet, fetchedAt: string): PostRow {
   if (tweet.__typename === "TweetTombstone" || !tweet.text) return { tweet_id: tweetId, available: false, fetched_at: fetchedAt };
   const quoted = tweet.quoted_tweet;
@@ -157,25 +183,36 @@ function syndicationToRow(tweetId: string, tweet: SyndicationTweet, fetchedAt: s
     text: displayText(tweet),
     posted_at: tweet.created_at ?? null,
     media: (tweet.mediaDetails ?? []).map(toXMedia),
-    referenced: quoted ? { text: displayText(quoted), media: (quoted.mediaDetails ?? []).map(toXMedia) } : null,
+    referenced: quoted ? embeddedPost(quoted) : null,
     referenced_kind: quoted ? "quoted" : tweet.in_reply_to_status_id_str ? "replied_to" : null,
     fetched_at: fetchedAt,
   };
 }
 
-class RateLimited extends Error {}
+export class RateLimited extends Error {}
+
+/** One post from the embed endpoint, "gone" when X no longer has it, or null
+ *  when the fetch failed for a reason that may pass. A rate limit throws
+ *  RateLimited. */
+export async function fetchSyndicatedTweet(tweetId: string): Promise<SyndicationTweet | "gone" | null> {
+  const response = await fetch(`${SYNDICATION_URL}?id=${tweetId}&token=${syndicationToken(tweetId)}`);
+  if (response.status === 429) throw new RateLimited();
+  if (response.status === 404) return "gone";
+  if (!response.ok) return null;
+  const body = await response.text();
+  if (body.trim() === "" || body.trim() === "{}") return "gone";
+  const tweet = JSON.parse(body) as SyndicationTweet;
+  return tweet.__typename === "TweetTombstone" || !tweet.text ? "gone" : tweet;
+}
 
 /** One post from the embed endpoint. Null when the fetch failed for a reason
  *  that may pass, so the post is tried again on the next run. */
 async function fetchSyndicated(tweetId: string): Promise<PostRow | null> {
   const fetchedAt = new Date().toISOString();
-  const response = await fetch(`${SYNDICATION_URL}?id=${tweetId}&token=${syndicationToken(tweetId)}`);
-  if (response.status === 429) throw new RateLimited();
-  if (response.status === 404) return { tweet_id: tweetId, available: false, fetched_at: fetchedAt };
-  if (!response.ok) return null;
-  const body = await response.text();
-  if (body.trim() === "" || body.trim() === "{}") return { tweet_id: tweetId, available: false, fetched_at: fetchedAt };
-  return syndicationToRow(tweetId, JSON.parse(body) as SyndicationTweet, fetchedAt);
+  const tweet = await fetchSyndicatedTweet(tweetId);
+  if (tweet === "gone") return { tweet_id: tweetId, available: false, fetched_at: fetchedAt };
+  if (!tweet) return null;
+  return syndicationToRow(tweetId, tweet, fetchedAt);
 }
 
 /** Fetches the posts a few at a time and writes them in batches. On a rate

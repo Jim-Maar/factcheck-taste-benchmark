@@ -2,10 +2,10 @@ import { useState } from "react";
 import type { CnNote } from "@cn/core/taste";
 import type { ProjectHeader } from "@cn/core/types";
 import { LabelRow } from "@cn/features/notes/LabelRow";
-import { NoteBox, RatingPanel } from "@cn/features/notes/NoteBox";
+import { NoteBox } from "@cn/features/notes/NoteBox";
 import { hasNoteSide, NoteSide } from "@cn/features/notes/NoteSide";
+import { ReviewSection } from "@cn/features/notes/ReviewSection";
 import { useLabelling } from "@cn/features/notes/useLabelling";
-import { AccuracyPills, VerdictPills } from "@cn/features/notes/VerdictPills";
 import { Button } from "@cn/ui/Button";
 import { QuoteIcon } from "@cn/ui/icons";
 import { ClaimCard } from "../../components/ClaimCard";
@@ -47,8 +47,8 @@ function CreatorByline({ card }: { card: CnNote }) {
 }
 
 /** One note of commonnotes.net as its All notes page shows it: the claim in
- *  its post, the note with its status and sources, and in place of the rating
- *  pills the verdict, then the labels where the website has its actions. */
+ *  its post, the note with its status and sources and the website's votes,
+ *  and below a rule the labeller's review and the labels. */
 export function CnNoteCard({ card }: { card: CnNote }) {
   const { setVerdict, setAccuracy } = useLabelling("commonnotes");
   const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -56,23 +56,25 @@ export function CnNoteCard({ card }: { card: CnNote }) {
   const { note } = card;
   return (
     <ClaimCard id={`note-${note.id}`} claim={note.claim} paragraph={note.claim.context_paragraph} post={card.post} byline={<CreatorByline card={card} />} aside={hasNoteSide(card, commentOpen) && <NoteSide source="commonnotes" noteId={note.id} card={card} commentOpen={commentOpen} onCommentClosed={() => setCommentOpen(false)} />}>
-      <NoteBox note={note} status={card.ratingStatus} sourcesOpen={sourcesOpen} byline={`${WRITER_NAMES[card.writer]} · ${new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`} question={<span className="font-semibold">Taste failure?</span>}>
-        <VerdictPills verdict={card.verdict} onChange={(verdict) => setVerdict(note.id, verdict)} />
-      </NoteBox>
-      <RatingPanel question={<span className="font-semibold">Accurate?</span>}>
-        <AccuracyPills accuracy={card.accuracy} onChange={(accuracy) => setAccuracy(note.id, accuracy)} />
-      </RatingPanel>
+      <NoteBox note={note} status={card.ratingStatus} sourcesOpen={sourcesOpen} byline={`${WRITER_NAMES[card.writer]} · ${new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`} />
       <p className="mt-2 text-xs text-fg-muted">
         Votes on commonnotes.net: {note.helpful_count} helpful, {note.somewhat_helpful_count} somewhat, {note.not_helpful_count} not helpful
         {card.pHelpful !== null && ` · ${Math.round(card.pHelpful * 100)}% chance of ending helpful`}
       </p>
-      <LabelRow source="commonnotes" noteId={note.id} labels={card.labels} onAddComment={card.comment || commentOpen ? undefined : () => setCommentOpen(true)}>
-        {note.has_source_details && (
-          <Button variant="link" className={TOUCH_TARGET} aria-expanded={sourcesOpen} onClick={() => setSourcesOpen((open) => !open)}>
-            <QuoteIcon size={ACTION_ICON_SIZE} aria-hidden /> Source details
-          </Button>
-        )}
-      </LabelRow>
+      <ReviewSection
+        accuracy={card.accuracy}
+        verdict={card.verdict}
+        onAccuracy={(accuracy) => setAccuracy(note.id, accuracy)}
+        onVerdict={(verdict) => setVerdict(note.id, verdict)}
+      >
+        <LabelRow source="commonnotes" noteId={note.id} labels={card.labels} onAddComment={card.comment || commentOpen ? undefined : () => setCommentOpen(true)}>
+          {note.has_source_details && (
+            <Button variant="link" className={TOUCH_TARGET} aria-expanded={sourcesOpen} onClick={() => setSourcesOpen((open) => !open)}>
+              <QuoteIcon size={ACTION_ICON_SIZE} aria-hidden /> Source details
+            </Button>
+          )}
+        </LabelRow>
+      </ReviewSection>
     </ClaimCard>
   );
 }

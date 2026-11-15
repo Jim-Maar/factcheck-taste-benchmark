@@ -1,18 +1,20 @@
 import { importCommonNotes } from "./commonNotes";
 import { importXNotes } from "./xNotes";
 import { importXPosts } from "./xPosts";
+import { importXThreads } from "./xThreads";
 
 /* The import. Run from the repository root, so Bun loads .env:
  *
  *   bun scripts/import/index.ts commonnotes
  *   bun scripts/import/index.ts x <dump folder> <dump date YYYY-MM-DD>
  *   bun scripts/import/index.ts posts
+ *   bun scripts/import/index.ts threads
  *   bun scripts/import/index.ts all <dump folder> <dump date YYYY-MM-DD>
  *
  * Every part can run again at any time. It updates the copied notes and never
  * touches verdicts or labels. */
 
-const USAGE = "Usage: bun scripts/import/index.ts commonnotes | x <dump folder> <YYYY-MM-DD> | posts | all <dump folder> <YYYY-MM-DD>";
+const USAGE = "Usage: bun scripts/import/index.ts commonnotes | x <dump folder> <YYYY-MM-DD> | posts | threads | all <dump folder> <YYYY-MM-DD>";
 
 function dumpArgs(args: string[]): [string, string] {
   const [dumpDir, dumpDate] = args;
@@ -37,10 +39,14 @@ switch (command) {
   case "posts":
     await timed("posts", importXPosts);
     break;
+  case "threads":
+    await timed("threads", importXThreads);
+    break;
   case "all":
     await timed("commonnotes", importCommonNotes);
     await timed("x", () => importXNotes(...dumpArgs(args)));
     await timed("posts", importXPosts);
+    await timed("threads", importXThreads);
     break;
   default:
     throw new Error(USAGE);
