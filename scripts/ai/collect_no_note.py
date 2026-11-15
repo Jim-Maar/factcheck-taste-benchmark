@@ -75,7 +75,7 @@ def review(model: str, version: str, effort: str, note_ids: list[str]) -> float:
     saved = re.search(r"(\d+) of \d+ saved", output)
     if not saved or saved.group(1) == "0":
         sys.exit(f"run.ts saved no review, so the run stops:\n{output}")
-    cost = re.search(r"Cost \$([\d.]+)", output)
+    cost = re.search(r"Cost \$(\d+\.\d+)", output)
     return float(cost.group(1)) if cost else 0.0
 
 
