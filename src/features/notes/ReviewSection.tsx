@@ -3,13 +3,19 @@ import type { Accuracy, NeedsNote, Verdict } from "@cn/core/taste";
 import { eyebrowVariants } from "@cn/ui/typography";
 import { AccuracyPills, NeedsNotePills, VerdictPills } from "./VerdictPills";
 
-/** The labeller's own answers about a note, set apart from what the card
- *  shows about the note by a rule across the card: whether the post needs a
- *  note at all, the accuracy, the taste verdict and, in `children`, the labels. It sits at the bottom of a card
- *  with p-4 and runs out to its edges. */
-/** sm:pt-2 centres the question's first line on a 36px pill. */
-const QUESTION_CLASS = "text-sm font-semibold text-fg sm:max-w-[10.5rem] sm:pt-2";
+/** One question of the review: its name above its pills. */
+function Question({ name, children }: { name: string; children: ReactNode }) {
+  return (
+    <div className="py-2.5 first:pt-0 last:pb-0">
+      <dt className="mb-1.5 text-xs font-semibold text-fg-secondary">{name}</dt>
+      <dd>{children}</dd>
+    </div>
+  );
+}
 
+/** The labeller's own answers about a note, in a box of its own beside the
+ *  note's card: whether the post needs a note at all, the accuracy, the taste
+ *  verdict and, in `children`, the labels. A rule separates each question. */
 export function ReviewSection({ needsNote, accuracy, verdict, onNeedsNote, onAccuracy, onVerdict, children }: {
   needsNote: NeedsNote | null;
   accuracy: Accuracy | null;
@@ -20,25 +26,20 @@ export function ReviewSection({ needsNote, accuracy, verdict, onNeedsNote, onAcc
   children?: ReactNode;
 }) {
   return (
-    <section aria-label="Your review" className="-mx-4 mt-4 border-t border-line px-4 pt-3">
+    <section aria-label="Your review" className="rounded-card border border-line bg-surface p-3">
       <h3 className={eyebrowVariants()}>Your review</h3>
-      {/* A question may wrap onto two lines, which leaves the pills room to
-          stay on one line. Each question lines up with its first row of pills. */}
-      <dl className="mt-2 grid items-start gap-x-4 gap-y-2 sm:grid-cols-[max-content_minmax(0,1fr)]">
-        <dt className={QUESTION_CLASS}>Needs a community note?</dt>
-        <dd>
+      <dl className="mt-2 divide-y divide-line">
+        <Question name="Needs a community note?">
           <NeedsNotePills needsNote={needsNote} onChange={onNeedsNote} />
-        </dd>
-        <dt className={QUESTION_CLASS}>Accurate?</dt>
-        <dd>
+        </Question>
+        <Question name="Accurate?">
           <AccuracyPills accuracy={accuracy} onChange={onAccuracy} />
-        </dd>
-        <dt className={QUESTION_CLASS}>Taste failure?</dt>
-        <dd>
+        </Question>
+        <Question name="Taste failure?">
           <VerdictPills verdict={verdict} onChange={onVerdict} />
-        </dd>
+        </Question>
       </dl>
-      {children}
+      {children && <div className="mt-2.5 border-t border-line pt-0.5">{children}</div>}
     </section>
   );
 }

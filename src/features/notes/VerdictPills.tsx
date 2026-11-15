@@ -13,7 +13,7 @@ import { CheckIcon, CloseIcon } from "@cn/ui/icons";
  * Correct green, Partly amber, Wrong red. Correct, but unconvincing is green
  * too, because the note is still right, but it has no check mark. */
 const verdictPillVariants = cva(
-  cn("inline-flex h-9 items-center justify-center gap-1.5 rounded-control border px-4 text-sm font-semibold transition-colors [@media(pointer:coarse)]:min-h-10 disabled:opacity-60", focusRing),
+  cn("inline-flex h-7 items-center justify-center gap-1 rounded-control border px-2.5 text-xs font-semibold transition-colors [@media(pointer:coarse)]:min-h-10 disabled:opacity-60", focusRing),
   {
     variants: {
       tone: { positive: "", negative: "", caution: "", neutral: "" },
@@ -36,7 +36,7 @@ const verdictPillVariants = cva(
   },
 );
 
-const VERDICT_ICON_SIZE = 12;
+const VERDICT_ICON_SIZE = 10;
 
 const VERDICT_OPTIONS = [
   { value: "taste_failure", label: "Yes", meaning: "Taste failure", tone: "negative", icon: <CloseIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
@@ -81,7 +81,7 @@ function ChoicePills<T extends string>({ options, value: chosen, onChange }: { o
     }
   };
   return (
-    <span className="inline-flex flex-wrap items-center gap-1.5">
+    <span className="inline-flex flex-wrap items-center gap-1">
       {options.map(({ value, label, meaning, tone, icon }) => (
         <button
           key={value}

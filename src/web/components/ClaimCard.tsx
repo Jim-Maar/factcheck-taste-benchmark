@@ -33,6 +33,11 @@ function ClaimImages({ urls }: { urls: string[] }) {
  *  sideways when an aside appears and all cards line up. */
 const ASIDE_GRID = "xl:grid xl:grid-cols-[minmax(0,0.7fr)_minmax(0,40rem)_minmax(0,1.3fr)] xl:gap-4";
 
+/** On a wide screen the aside follows the window down as the reader scrolls,
+ *  just below the site header (3.5rem), and stops at the bottom of its card's
+ *  row. An aside taller than the window scrolls inside itself. */
+const SIDE_STICKY = "xl:sticky xl:top-[4.5rem] xl:max-h-[calc(100vh-5.5rem)] xl:overflow-y-auto";
+
 /** A card about one claim: the claim in its source at the top, and below it
  *  whatever the page shows about the claim. On a wide screen the paragraph
  *  around the claim sits beside the card, and `aside` on its other side. On a
@@ -90,7 +95,7 @@ export function ClaimCard({ id, claim, paragraph, post, byline, aside, children 
         </div>
         {children}
       </Card>
-      {aside && <div className="mx-auto mt-4 w-full min-w-0 max-w-[40rem] xl:col-start-3 xl:row-start-1 xl:mx-0 xl:mt-0 xl:max-w-none">{aside}</div>}
+      {aside && <div className={cn("mx-auto mt-4 w-full min-w-0 max-w-[40rem] xl:col-start-3 xl:row-start-1 xl:mx-0 xl:mt-0 xl:max-w-none", SIDE_STICKY)}>{aside}</div>}
     </div>
   );
 }

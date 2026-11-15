@@ -3,7 +3,7 @@ import type { CnNote } from "@cn/core/taste";
 import type { ProjectHeader } from "@cn/core/types";
 import { LabelRow } from "@cn/features/notes/LabelRow";
 import { NoteBox } from "@cn/features/notes/NoteBox";
-import { hasNoteSide, NoteSide } from "@cn/features/notes/NoteSide";
+import { NoteSide } from "@cn/features/notes/NoteSide";
 import { ReviewSection } from "@cn/features/notes/ReviewSection";
 import { useLabelling } from "@cn/features/notes/useLabelling";
 import { Button } from "@cn/ui/Button";
@@ -47,36 +47,45 @@ function CreatorByline({ card }: { card: CnNote }) {
 }
 
 /** One note of commonnotes.net as its All notes page shows it: the claim in
- *  its post, the note with its status and sources and the website's votes,
- *  and below a rule the labeller's review and the labels. */
+ *  its post, the note with its status and sources and the website's votes.
+ *  The labeller's review and the labels sit beside it with the AI reviews. */
 export function CnNoteCard({ card }: { card: CnNote }) {
   const { setVerdict, setAccuracy, setNeedsNote } = useLabelling("commonnotes");
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
   const { note } = card;
+  const review = (
+    <ReviewSection
+      needsNote={card.needsNote}
+      accuracy={card.accuracy}
+      verdict={card.verdict}
+      onNeedsNote={(needsNote) => setNeedsNote(note.id, needsNote)}
+      onAccuracy={(accuracy) => setAccuracy(note.id, accuracy)}
+      onVerdict={(verdict) => setVerdict(note.id, verdict)}
+    >
+      <LabelRow source="commonnotes" noteId={note.id} labels={card.labels} onAddComment={card.comment || commentOpen ? undefined : () => setCommentOpen(true)}>
+        {note.has_source_details && (
+          <Button variant="link" className={TOUCH_TARGET} aria-expanded={sourcesOpen} onClick={() => setSourcesOpen((open) => !open)}>
+            <QuoteIcon size={ACTION_ICON_SIZE} aria-hidden /> Source details
+          </Button>
+        )}
+      </LabelRow>
+    </ReviewSection>
+  );
   return (
-    <ClaimCard id={`note-${note.id}`} claim={note.claim} paragraph={note.claim.context_paragraph} post={card.post} byline={<CreatorByline card={card} />} aside={hasNoteSide(card, commentOpen) && <NoteSide source="commonnotes" noteId={note.id} card={card} commentOpen={commentOpen} onCommentClosed={() => setCommentOpen(false)} />}>
+    <ClaimCard
+      id={`note-${note.id}`}
+      claim={note.claim}
+      paragraph={note.claim.context_paragraph}
+      post={card.post}
+      byline={<CreatorByline card={card} />}
+      aside={<NoteSide review={review} source="commonnotes" noteId={note.id} card={card} commentOpen={commentOpen} onCommentClosed={() => setCommentOpen(false)} />}
+    >
       <NoteBox note={note} status={card.ratingStatus} sourcesOpen={sourcesOpen} byline={`${WRITER_NAMES[card.writer]} · ${new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`} />
       <p className="mt-2 text-xs text-fg-muted">
         Votes on commonnotes.net: {note.helpful_count} helpful, {note.somewhat_helpful_count} somewhat, {note.not_helpful_count} not helpful
         {card.pHelpful !== null && ` · ${Math.round(card.pHelpful * 100)}% chance of ending helpful`}
       </p>
-      <ReviewSection
-        needsNote={card.needsNote}
-        accuracy={card.accuracy}
-        verdict={card.verdict}
-        onNeedsNote={(needsNote) => setNeedsNote(note.id, needsNote)}
-        onAccuracy={(accuracy) => setAccuracy(note.id, accuracy)}
-        onVerdict={(verdict) => setVerdict(note.id, verdict)}
-      >
-        <LabelRow source="commonnotes" noteId={note.id} labels={card.labels} onAddComment={card.comment || commentOpen ? undefined : () => setCommentOpen(true)}>
-          {note.has_source_details && (
-            <Button variant="link" className={TOUCH_TARGET} aria-expanded={sourcesOpen} onClick={() => setSourcesOpen((open) => !open)}>
-              <QuoteIcon size={ACTION_ICON_SIZE} aria-hidden /> Source details
-            </Button>
-          )}
-        </LabelRow>
-      </ReviewSection>
     </ClaimCard>
   );
 }

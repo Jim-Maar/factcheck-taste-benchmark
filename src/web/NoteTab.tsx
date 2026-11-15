@@ -54,10 +54,16 @@ function NoteList<S extends Source>({ source, request, renderCard }: { source: S
   if (!rows) return <p className="text-sm text-fg-muted">Loading…</p>;
   if (rows.length === 0) return <p className="py-12 text-center text-sm text-fg-muted">No notes match these filters.</p>;
   return (
-    <div className="space-y-4">
-      {rows.map((row) => (
-        <div key={row.noteId}>{renderCard(row.card)}</div>
-      ))}
+    <div>
+      {/* A rule across the page between notes, so each note's card and the
+          column beside it read as one. */}
+      <div className="divide-y divide-line">
+        {rows.map((row) => (
+          <div key={row.noteId} className="py-6 first:pt-0">
+            {renderCard(row.card)}
+          </div>
+        ))}
+      </div>
       <PagedListEnd list={list} endText="That is every note that matches." />
     </div>
   );

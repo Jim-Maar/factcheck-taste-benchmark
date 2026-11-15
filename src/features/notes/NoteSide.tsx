@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { AiReview, NoteComment, Source } from "@cn/core/taste";
 import { cn } from "@cn/ui/cn";
 import { Textarea } from "@cn/ui/Field";
@@ -51,12 +51,12 @@ function CommentBox({ source, noteId, comment, onClosed }: { source: Source; not
   );
 }
 
-/** Whether a note's side column has anything to show. */
-export const hasNoteSide = (card: { ai: AiReview[]; comment: NoteComment | null }, commentOpen: boolean) => card.ai.length > 0 || !!card.comment || commentOpen;
-
-/** What sits beside a note's card: each model's AI review, and below it the note's
- *  comment once someone writes one or clicks Add comment. */
-export function NoteSide({ source, noteId, card, commentOpen, onCommentClosed, className }: {
+/** What sits beside a note's card: the labeller's own review, then the AI
+ *  reviews, one tab per model, and last the note's comment once someone
+ *  writes one or clicks Add comment. */
+export function NoteSide({ review, source, noteId, card, commentOpen, onCommentClosed, className }: {
+  /** The labeller's own review (a ReviewSection). */
+  review: ReactNode;
   source: Source;
   noteId: string;
   card: { ai: AiReview[]; comment: NoteComment | null };
@@ -66,9 +66,8 @@ export function NoteSide({ source, noteId, card, commentOpen, onCommentClosed, c
 }) {
   return (
     <div className={cn("space-y-4", className)}>
-      {card.ai.map((review) => (
-        <AiReviewPanel key={review.model} review={review} />
-      ))}
+      {review}
+      {card.ai.length > 0 && <AiReviewPanel reviews={card.ai} />}
       {(card.comment || commentOpen) && <CommentBox source={source} noteId={noteId} comment={card.comment} onClosed={onCommentClosed} />}
     </div>
   );

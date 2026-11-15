@@ -3,7 +3,7 @@ import { humanizeTagName } from "@cn/core/ratingReasons";
 import type { XNote } from "@cn/core/taste";
 import { LabelRow } from "@cn/features/notes/LabelRow";
 import { StatusBadge } from "@cn/features/notes/NoteBox";
-import { hasNoteSide, NoteSide } from "@cn/features/notes/NoteSide";
+import { NoteSide } from "@cn/features/notes/NoteSide";
 import { ReviewSection } from "@cn/features/notes/ReviewSection";
 import { useLabelling } from "@cn/features/notes/useLabelling";
 import { Button } from "@cn/ui/Button";
@@ -114,15 +114,13 @@ function OtherNotes({ notes }: { notes: XNote["otherNotes"] }) {
   );
 }
 
-/** One AI notewriter's note on X in three tiers: the post in its box, then
- *  the note under a Community Note heading with its status, writer, the
- *  writer's answers and X's ratings, and last, below a rule, the labeller's
- *  own review. Adapted from commonnotes.net's X notewriter page. */
-function XNoteBody({ note, onAddComment }: { note: XNote; onAddComment?: () => void }) {
-  const { setVerdict, setAccuracy, setNeedsNote } = useLabelling("x");
+/** One AI notewriter's note on X: the post in its box, then the note under
+ *  a Community Note heading with its status, writer, the writer's answers and
+ *  X's ratings. Adapted from commonnotes.net's X notewriter page. */
+function XNoteBody({ note }: { note: XNote }) {
   const written = new Date(note.written).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return (
-    <Card className="mx-auto w-full max-w-[40rem] p-4 xl:mx-0 xl:max-w-none">
+    <Card className="mx-auto w-full max-w-[40rem] p-4 lg:mx-0 lg:max-w-none">
       <XPostCard post={note.post} />
       <section aria-label="Community Note" className="mt-4">
         <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3">
@@ -146,31 +144,42 @@ function XNoteBody({ note, onAddComment }: { note: XNote; onAddComment?: () => v
         </div>
         <OtherNotes notes={note.otherNotes} />
       </section>
-      <ReviewSection
-        needsNote={note.needsNote}
-        accuracy={note.accuracy}
-        verdict={note.verdict}
-        onNeedsNote={(needsNote) => setNeedsNote(note.noteId, needsNote)}
-        onAccuracy={(accuracy) => setAccuracy(note.noteId, accuracy)}
-        onVerdict={(verdict) => setVerdict(note.noteId, verdict)}
-      >
-        <LabelRow source="x" noteId={note.noteId} labels={note.labels} onAddComment={onAddComment} />
-      </ReviewSection>
     </Card>
   );
 }
 
 /** The note's card, and beside it on a wide screen, or below it on a narrow
- *  one, the AI review and the comment. Every card keeps the same column,
- *  whether it has anything beside it or not, so the cards line up. */
+ *  one, the labeller's review, the AI reviews and the comment. On a wide
+ *  screen that column follows the window down as the reader scrolls, just
+ *  below the site header (3.5rem), and stops at the bottom of the card's
+ *  row; a column taller than the window scrolls inside itself. */
 export function XNoteCard({ note }: { note: XNote }) {
+  const { setVerdict, setAccuracy, setNeedsNote } = useLabelling("x");
   const [commentOpen, setCommentOpen] = useState(false);
+  const review = (
+    <ReviewSection
+      needsNote={note.needsNote}
+      accuracy={note.accuracy}
+      verdict={note.verdict}
+      onNeedsNote={(needsNote) => setNeedsNote(note.noteId, needsNote)}
+      onAccuracy={(accuracy) => setAccuracy(note.noteId, accuracy)}
+      onVerdict={(verdict) => setVerdict(note.noteId, verdict)}
+    >
+      <LabelRow source="x" noteId={note.noteId} labels={note.labels} onAddComment={note.comment || commentOpen ? undefined : () => setCommentOpen(true)} />
+    </ReviewSection>
+  );
   return (
-    <div className="items-start space-y-4 xl:grid xl:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] xl:gap-4 xl:space-y-0">
-      <XNoteBody note={note} onAddComment={note.comment || commentOpen ? undefined : () => setCommentOpen(true)} />
-      {hasNoteSide(note, commentOpen) && (
-        <NoteSide source="x" noteId={note.noteId} card={note} commentOpen={commentOpen} onCommentClosed={() => setCommentOpen(false)} className="mx-auto w-full max-w-[40rem] xl:mx-0 xl:max-w-none" />
-      )}
+    <div className="items-start space-y-4 lg:grid lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:gap-4 lg:space-y-0">
+      <XNoteBody note={note} />
+      <NoteSide
+        review={review}
+        source="x"
+        noteId={note.noteId}
+        card={note}
+        commentOpen={commentOpen}
+        onCommentClosed={() => setCommentOpen(false)}
+        className="mx-auto w-full max-w-[40rem] lg:sticky lg:top-[4.5rem] lg:mx-0 lg:max-h-[calc(100vh-5.5rem)] lg:max-w-none lg:overflow-y-auto"
+      />
     </div>
   );
 }
