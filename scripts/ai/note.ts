@@ -8,9 +8,9 @@ import { indent, mediaLines, renderPost, type PostSource } from "./thread";
  * saved. Leaves out how X rated the note, the raters' reasons and the other
  * notes on the post, so the review is the reviewer's own judgement. */
 
-export const RECOMMENDATIONS = ["taste_failure", "fine"] as const;
+export const RECOMMENDATIONS = ["taste_failure", "fine", "unsure"] as const;
 /** Whether the post needs a community note at all (migration 19). */
-export const NEEDS_NOTE_ANSWERS = ["yes", "no"] as const;
+export const NEEDS_NOTE_ANSWERS = ["yes", "no", "unsure"] as const;
 /** A review sits beside a note of a few hundred characters, and must not take
  *  longer to read than the note. */
 export const MAX_EXPLANATION_CHARS = 300;

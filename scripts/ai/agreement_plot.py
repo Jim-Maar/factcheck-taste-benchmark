@@ -2,6 +2,8 @@
 standard figures of a classification paper: a confusion matrix for "Taste
 failure?", one for "Needs a community note?", and precision and recall for
 each label with 95% Wilson intervals. Only notes a labeller answered count.
+Both the labellers and the judge may answer Unsure. The scores count the
+judge's Unsure as right, and say how often the judge used it.
 Run from the repository root:
 
     uv run --with matplotlib --with "psycopg[binary]" --with python-dotenv \
@@ -24,8 +26,10 @@ import psycopg
 from dotenv import load_dotenv
 
 Z_95 = 1.96
-TASTE_FAILURE_VERDICTS = {"taste_failure", "somewhat"}
-NOT_TASTE_FAILURE_VERDICTS = {"fine"}
+ANSWERS = ["No", "Yes", "Unsure"]
+HAND_VERDICT_ANSWER = {"taste_failure": "Yes", "somewhat": "Yes", "fine": "No", "unsure": "Unsure"}
+JUDGE_RECOMMENDATION_ANSWER = {"taste_failure": "Yes", "fine": "No", "unsure": "Unsure"}
+NEEDS_NOTE_ANSWER = {"yes": "Yes", "no": "No", "unsure": "Unsure"}
 
 
 def wilson_interval(hits: int, total: int) -> tuple[float, float]:
@@ -73,25 +77,38 @@ def load(model: str, prompt_version: str, note_ids: list[str] | None) -> list[di
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-def confusion_panel(axis, pairs: list[tuple[bool, bool]], title: str, tick_labels: list[str]) -> None:
-    """A 2x2 confusion matrix: rows are the labellers, columns the model."""
-    matrix = np.zeros((2, 2), dtype=int)
-    for human, model in pairs:
-        matrix[int(human), int(model)] += 1
+def confusion_panel(axis, pairs: list[tuple[str, str]], title: str) -> None:
+    """A 3x3 confusion matrix of No, Yes and Unsure: rows are the labellers,
+    columns the judge. The title scores only the notes where the labellers
+    said Yes or No. It counts the judge's Unsure as right, and gives the
+    agreement on the notes the judge decided apart."""
+    matrix = np.zeros((len(ANSWERS), len(ANSWERS)), dtype=int)
+    for human, judge in pairs:
+        matrix[ANSWERS.index(human), ANSWERS.index(judge)] += 1
     axis.imshow(matrix, cmap="Blues", vmin=0)
-    for row in range(2):
-        for column in range(2):
+    for row in range(len(ANSWERS)):
+        for column in range(len(ANSWERS)):
             count = matrix[row, column]
             axis.text(column, row, str(count), ha="center", va="center", color="white" if count > matrix.max() / 2 else "black", fontsize=14)
-    axis.set_xticks([0, 1], tick_labels)
-    axis.set_yticks([0, 1], tick_labels)
+    axis.set_xticks(range(len(ANSWERS)), ANSWERS)
+    axis.set_yticks(range(len(ANSWERS)), ANSWERS)
     axis.set_xlabel("Judge")
     axis.set_ylabel("Labellers")
-    if not pairs:
+    scored = [(human, judge) for human, judge in pairs if human != "Unsure"]
+    if not scored:
         axis.set_title(f"{title}\nno note has both answers yet")
         return
-    correct = sum(a == b for a, b in pairs)
-    axis.set_title(f"{title}\naccuracy {correct}/{len(pairs)} = {correct / len(pairs):.0%}, Cohen's κ = {cohens_kappa(pairs):.2f}")
+    judge_unsure = sum(judge == "Unsure" for _, judge in pairs)
+    unsure_counted_right = sum(judge in (human, "Unsure") for human, judge in scored)
+    decided = [(human == "Yes", judge == "Yes") for human, judge in scored if judge != "Unsure"]
+    decided_text = (
+        f"judge decided: {sum(a == b for a, b in decided)}/{len(decided)} = {sum(a == b for a, b in decided) / len(decided):.0%}, κ = {cohens_kappa(decided):.2f}"
+        if decided else "the judge decided none"
+    )
+    axis.set_title(
+        f"{title}\nUnsure counted right: {unsure_counted_right}/{len(scored)} = {unsure_counted_right / len(scored):.0%}\n"
+        f"{decided_text}\njudge Unsure on {judge_unsure} of {len(pairs)} notes ({judge_unsure / len(pairs):.0%})"
+    )
 
 
 def label_panel(axis, rows: list[dict]) -> None:
@@ -133,18 +150,18 @@ def main() -> None:
     if not rows:
         sys.exit(f"No reviews by {model} with prompt {prompt_version} on hand-labelled notes")
     taste_pairs = [
-        (row["verdict"] in TASTE_FAILURE_VERDICTS, row["recommendation"] == "taste_failure")
+        (HAND_VERDICT_ANSWER[row["verdict"]], JUDGE_RECOMMENDATION_ANSWER[row["recommendation"]])
         for row in rows
-        if row["verdict"] in TASTE_FAILURE_VERDICTS | NOT_TASTE_FAILURE_VERDICTS
+        if row["verdict"] in HAND_VERDICT_ANSWER
     ]
     needs_note_pairs = [
-        (row["needs_note"] == "yes", row["ai_needs_note"] == "yes")
+        (NEEDS_NOTE_ANSWER[row["needs_note"]], NEEDS_NOTE_ANSWER[row["ai_needs_note"]])
         for row in rows
-        if row["needs_note"] in ("yes", "no") and row["ai_needs_note"] in ("yes", "no")
+        if row["needs_note"] in NEEDS_NOTE_ANSWER and row["ai_needs_note"] in NEEDS_NOTE_ANSWER
     ]
-    figure, axes = plt.subplots(1, 3, figsize=(18, 5.5), gridspec_kw={"width_ratios": [1, 1, 1.6]})
-    confusion_panel(axes[0], taste_pairs, "Taste failure?", ["No", "Yes"])
-    confusion_panel(axes[1], needs_note_pairs, "Needs a community note?", ["No", "Yes"])
+    figure, axes = plt.subplots(1, 3, figsize=(19, 6.5), gridspec_kw={"width_ratios": [1, 1, 1.6]})
+    confusion_panel(axes[0], taste_pairs, "Taste failure?")
+    confusion_panel(axes[1], needs_note_pairs, "Needs a community note?")
     label_panel(axes[2], rows)
     figure.suptitle(f"{model} (prompt {prompt_version}) vs. labellers on {len(rows)} hand-labelled X notes")
     figure.tight_layout()

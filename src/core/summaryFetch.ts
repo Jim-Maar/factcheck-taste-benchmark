@@ -1,6 +1,6 @@
 import type { SummaryData } from "./summary";
 import { supabase } from "./supabase";
-import type { NeedsNote, Verdict } from "./taste";
+import type { AiRecommendation, NeedsNote, Verdict } from "./taste";
 
 /* Reads what the Summary tab shows. Kept apart from summary.ts, which only
  * works things out, so scripts can use those functions without the
@@ -25,7 +25,7 @@ async function all<T>(table: string, columns: string, order: string[], xOnly = f
 interface ReviewRow {
   note_id: string;
   model: string;
-  recommendation: "taste_failure" | "fine";
+  recommendation: AiRecommendation;
   labels: string[];
   input_tokens: number | null;
   cached_input_tokens: number | null;

@@ -7,7 +7,10 @@ import { focusRing } from "@cn/ui/focusRing";
 const RECOMMENDATION = {
   taste_failure: { label: "Taste failure", tone: "border-transparent bg-negative-selected text-negative-selected-fg", dot: "bg-negative-solid" },
   fine: { label: "No taste failure", tone: "border-transparent bg-positive-selected text-positive-selected-fg", dot: "bg-positive-solid" },
+  unsure: { label: "Unsure", tone: "border-fg-muted bg-surface-hover text-fg", dot: "bg-fg-muted" },
 } as const;
+
+const NEEDS_NOTE_ANSWER = { yes: "Yes", no: "No", unsure: "Unsure" } as const;
 
 /** One AI reviewer's explanation of what is going on, when it gave one, and
  *  the verdict it recommends with its labels and reasons. */
@@ -28,7 +31,7 @@ function AiReviewBody({ review }: { review: AiReview }) {
       <p className="mt-1 text-sm text-fg-secondary whitespace-pre-wrap">{review.reasoning}</p>
       {review.needsNote && (
         <p className="mt-2 text-xs text-fg-secondary">
-          <span className="font-semibold">Needs a community note?</span> {review.needsNote === "yes" ? "Yes" : "No"}
+          <span className="font-semibold">Needs a community note?</span> {NEEDS_NOTE_ANSWER[review.needsNote]}
         </p>
       )}
     </>

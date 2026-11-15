@@ -27,7 +27,7 @@ export interface Label {
 }
 
 /** The AI reviewer answers only yes or no. */
-export type AiRecommendation = Extract<Verdict, "taste_failure" | "fine">;
+export type AiRecommendation = Extract<Verdict, "taste_failure" | "fine" | "unsure">;
 
 /** An AI reviewer's account of a note: the context a reader may lack, which
  *  can be empty, and the verdict it recommends with its reasons and the names
@@ -39,7 +39,7 @@ export interface AiReview {
   labels: string[];
   /** Whether the reviewer thinks the post needs a community note at all.
    *  Null for reviews made before it was asked. */
-  needsNote: "yes" | "no" | null;
+  needsNote: NeedsNote | null;
   model: string;
   createdAt: string;
 }
@@ -303,7 +303,7 @@ interface AiReviewRow {
   recommendation: AiRecommendation;
   reasoning: string;
   labels: string[];
-  needs_note: "yes" | "no" | null;
+  needs_note: NeedsNote | null;
   model: string;
   created_at: string;
 }
