@@ -1,7 +1,7 @@
 import { importCommonNotes } from "./commonNotes";
 import { importXNotes } from "./xNotes";
 import { importXPosts } from "./xPosts";
-import { importTranscripts } from "./transcripts";
+import { importTranscripts, latestPostIds, reviewedPostIds } from "./transcripts";
 import { importXThreads } from "./xThreads";
 
 /* The import. Run from the repository root, so Bun loads .env:
@@ -12,13 +12,14 @@ import { importXThreads } from "./xThreads";
  *   bun scripts/import/index.ts threads
  *   bun scripts/import/index.ts all <dump folder> <dump date YYYY-MM-DD>
  *   bun scripts/import/index.ts transcripts <count>
+ *   bun scripts/import/index.ts transcripts reviewed
  *
  * Every part can run again at any time. It updates the copied notes and never
  * touches verdicts or labels. `transcripts` transcribes the videos under the
- * newest <count> helpful and <count> not helpful notes. It costs money, so
- * `all` leaves it out. */
+ * newest <count> helpful and <count> not helpful notes, or under every note an
+ * AI reviewer has reviewed. It costs money, so `all` leaves it out. */
 
-const USAGE = "Usage: bun scripts/import/index.ts commonnotes | x <dump folder> <YYYY-MM-DD> | posts | threads | all <dump folder> <YYYY-MM-DD> | transcripts <count>";
+const USAGE = "Usage: bun scripts/import/index.ts commonnotes | x <dump folder> <YYYY-MM-DD> | posts | threads | all <dump folder> <YYYY-MM-DD> | transcripts <count> | transcripts reviewed";
 
 function dumpArgs(args: string[]): [string, string] {
   const [dumpDir, dumpDate] = args;
@@ -54,8 +55,9 @@ switch (command) {
     break;
   case "transcripts": {
     const perStatus = Number(args[0]);
-    if (!Number.isInteger(perStatus) || perStatus <= 0) throw new Error(USAGE);
-    await timed("transcripts", () => importTranscripts(perStatus));
+    if (args[0] !== "reviewed" && (!Number.isInteger(perStatus) || perStatus <= 0)) throw new Error(USAGE);
+    const tweetIds = args[0] === "reviewed" ? await reviewedPostIds() : await latestPostIds(perStatus);
+    await timed("transcripts", () => importTranscripts(tweetIds));
     break;
   }
   default:

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { smallestMp4, videoId } from "../../src/core/xVideo";
 import { fetchRowsIn, target } from "./db";
 
-/* Transcripts of the videos in X posts, for the newest notes of each rating.
+/* Transcripts of the videos in X posts.
  * For every video in a note's post, or in the post it quotes, ffmpeg pulls
  * the sound out of the video's smallest file, and Whisper on Groq writes down
  * what is said. cn-return-bot transcribes the videos of posts the same way.
@@ -39,7 +39,7 @@ interface PostMedia {
 
 type AudioResult = "ok" | "gone" | "no_sound";
 
-async function latestPostIds(perStatus: number): Promise<string[]> {
+export async function latestPostIds(perStatus: number): Promise<string[]> {
   const ids = new Set<string>();
   for (const status of RATED_STATUSES) {
     const { data, error } = await target.from("x_notes").select("tweet_id").eq("status", status).order("written", { ascending: false }).limit(perStatus);
@@ -61,6 +61,14 @@ async function videosOf(tweetIds: string[]): Promise<Video[]> {
     }
   }
   return [...videos.values()];
+}
+
+/** The posts of every note an AI reviewer has reviewed. */
+export async function reviewedPostIds(): Promise<string[]> {
+  const { data: reviews, error } = await target.from("ai_reviews").select("note_id").eq("source", "x");
+  if (error) throw error;
+  const notes = await fetchRowsIn<{ tweet_id: string }>(target, "x_notes", "tweet_id", "note_id", [...new Set(reviews.map((row) => row.note_id as string))]);
+  return [...new Set(notes.map((row) => row.tweet_id))];
 }
 
 async function transcribedIds(videoIds: string[]): Promise<Set<string>> {
@@ -124,9 +132,8 @@ async function transcribeVideo(video: Video): Promise<boolean> {
   }
 }
 
-export async function importTranscripts(perStatus: number): Promise<void> {
+export async function importTranscripts(tweetIds: string[]): Promise<void> {
   if (!process.env.GROQ_API_KEY) throw new Error("GROQ_API_KEY is missing from .env");
-  const tweetIds = await latestPostIds(perStatus);
   const videos = await videosOf(tweetIds);
   const done = await transcribedIds(videos.map((video) => video.id));
   const queue = videos.filter((video) => !done.has(video.id));
