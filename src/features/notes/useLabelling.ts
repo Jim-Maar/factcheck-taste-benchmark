@@ -5,13 +5,13 @@ import { queryKeys } from "../query/queryKeys";
 /** Every label, most used first. */
 export const useLabels = () => useQuery({ queryKey: queryKeys.labels, queryFn: fetchLabels });
 
-type CardPatch = { verdict?: Verdict | null; accuracy?: Accuracy | null; labels?: Label[]; ai?: AiReview | null; comment?: NoteComment | null };
+type CardPatch = { verdict?: Verdict | null; accuracy?: Accuracy | null; labels?: Label[]; ai?: AiReview[]; comment?: NoteComment | null };
 
 /** Changes one note's card in every loaded page of its tab, so the card shows
  *  a write at once. The lists themselves are not reloaded. A reload would move
  *  or drop the card under the reader, for example from a list of notes
  *  without a verdict. */
-export function patchCard(client: QueryClient, source: Source, noteId: string, patch: (card: CardPatch & { labels: Label[] }) => CardPatch) {
+export function patchCard(client: QueryClient, source: Source, noteId: string, patch: (card: CardPatch & { labels: Label[]; ai: AiReview[] }) => CardPatch) {
   client.setQueriesData<InfiniteData<PagedCard<Source>[]>>({ queryKey: queryKeys.notes(source) }, (data) =>
     data && {
       ...data,

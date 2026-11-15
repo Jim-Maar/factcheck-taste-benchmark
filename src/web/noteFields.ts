@@ -37,6 +37,7 @@ const AI_RECOMMENDATION: FieldDef = {
   options: [
     { value: "taste_failure", label: "Taste failure" },
     { value: "fine", label: "No taste failure" },
+    { value: "split", label: "Models disagree" },
     { value: "none", label: "No AI review yet" },
   ],
 };

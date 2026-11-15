@@ -52,21 +52,23 @@ function CommentBox({ source, noteId, comment, onClosed }: { source: Source; not
 }
 
 /** Whether a note's side column has anything to show. */
-export const hasNoteSide = (card: { ai: AiReview | null; comment: NoteComment | null }, commentOpen: boolean) => !!card.ai || !!card.comment || commentOpen;
+export const hasNoteSide = (card: { ai: AiReview[]; comment: NoteComment | null }, commentOpen: boolean) => card.ai.length > 0 || !!card.comment || commentOpen;
 
-/** What sits beside a note's card: the AI review, and below it the note's
+/** What sits beside a note's card: each model's AI review, and below it the note's
  *  comment once someone writes one or clicks Add comment. */
 export function NoteSide({ source, noteId, card, commentOpen, onCommentClosed, className }: {
   source: Source;
   noteId: string;
-  card: { ai: AiReview | null; comment: NoteComment | null };
+  card: { ai: AiReview[]; comment: NoteComment | null };
   commentOpen: boolean;
   onCommentClosed: () => void;
   className?: string;
 }) {
   return (
     <div className={cn("space-y-4", className)}>
-      {card.ai && <AiReviewPanel review={card.ai} />}
+      {card.ai.map((review) => (
+        <AiReviewPanel key={review.model} review={review} />
+      ))}
       {(card.comment || commentOpen) && <CommentBox source={source} noteId={noteId} comment={card.comment} onClosed={onCommentClosed} />}
     </div>
   );

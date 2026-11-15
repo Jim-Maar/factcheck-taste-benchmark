@@ -109,7 +109,8 @@ export interface XNote {
   verdict: Verdict | null;
   accuracy: Accuracy | null;
   labels: Label[];
-  ai: AiReview | null;
+  /** Every model's review of the note, by model. */
+  ai: AiReview[];
   comment: NoteComment | null;
 }
 
@@ -126,7 +127,8 @@ export interface CnNote {
   verdict: Verdict | null;
   accuracy: Accuracy | null;
   labels: Label[];
-  ai: AiReview | null;
+  /** Every model's review of the note, by model. */
+  ai: AiReview[];
   comment: NoteComment | null;
 }
 

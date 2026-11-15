@@ -17,7 +17,9 @@ import { fetchLivePost, indent, liveSource, renderPost } from "./thread";
  * own judgement.
  *
  * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine" }.
- * Saving again replaces the note's review. The site shows a saved review at once. */
+ * Saving again with the same model replaces that model's review of the note;
+ * other models' reviews stay. The site shows a saved review at once.
+ * scripts/ai/run.ts runs a model over many notes and records what it cost. */
 
 const USAGE = "Usage: bun scripts/ai/review.ts latest <count> | show <note id> | labels | save <note id> <model> < review.json";
 const RECOMMENDATIONS = ["taste_failure", "fine"];
