@@ -5,7 +5,9 @@ each label with 95% Wilson intervals. Only notes a labeller answered count.
 Run from the repository root:
 
     uv run --with matplotlib --with "psycopg[binary]" --with python-dotenv \
-        scripts/ai/agreement_plot.py <model> <prompt version> <output.png>
+        scripts/ai/agreement_plot.py <model> <prompt version> <output.png> [<note ids file>]
+
+The optional file lists note ids, one per line. Then only those notes count.
 
 The prompt version is the commit run.ts records on each review, so reviews
 made with an older prompt stay out.
@@ -47,7 +49,7 @@ def cohens_kappa(pairs: list[tuple[bool, bool]]) -> float:
     return 0.0 if expected == 1 else (observed - expected) / (1 - expected)
 
 
-def load(model: str, prompt_version: str) -> list[dict]:
+def load(model: str, prompt_version: str, note_ids: list[str] | None) -> list[dict]:
     """One row per note a labeller answered and the model reviewed."""
     load_dotenv()
     query = """
@@ -63,9 +65,10 @@ def load(model: str, prompt_version: str) -> list[dict]:
           join taste.ai_reviews a on a.source = 'x' and a.note_id = h.note_id and a.model = %s and a.prompt_version = %s
           left join taste.verdicts v on v.source = 'x' and v.note_id = h.note_id
           left join taste.needs_note q on q.source = 'x' and q.note_id = h.note_id
+         where %s::text[] is null or h.note_id = any(%s::text[])
     """
     with psycopg.connect(os.environ["DATABASE_URL"]) as connection:
-        cursor = connection.execute(query, (model, prompt_version))
+        cursor = connection.execute(query, (model, prompt_version, note_ids, note_ids))
         columns = [column.name for column in cursor.description]
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
@@ -122,10 +125,11 @@ def label_panel(axis, rows: list[dict]) -> None:
 
 
 def main() -> None:
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         sys.exit(__doc__)
-    model, prompt_version, output = sys.argv[1:]
-    rows = load(model, prompt_version)
+    model, prompt_version, output = sys.argv[1:4]
+    note_ids = open(sys.argv[4]).read().split() if len(sys.argv) == 5 else None
+    rows = load(model, prompt_version, note_ids)
     if not rows:
         sys.exit(f"No reviews by {model} with prompt {prompt_version} on hand-labelled notes")
     taste_pairs = [
