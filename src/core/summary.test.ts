@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { labelAxes, labelCounts, modelRecall, modelStats, reviewCost, splits, writerLabelShares, writerStats, withoutTriedModels, LABELLERS, type Split, type SummaryData, type SummaryReview } from "./summary";
+import { commonNotes, judgedNotes, labelAxes, labelCounts, modelAgreement, modelRecall, modelStats, promptVersions, reviewCost, sameProtocol, splits, writerLabelShares, writerStats, withoutTriedModels, LABELLERS, UNRECORDED_PROMPT, type Split, type SummaryData, type SummaryReview } from "./summary";
 
 const review = (noteId: string, model: string, recommendation: "taste_failure" | "fine", labels: string[] = [], more: Partial<SummaryReview> = {}): SummaryReview => ({
-  noteId, model, recommendation, labels, inputTokens: null, cachedInputTokens: null, outputTokens: null, costUsd: null, ...more,
+  noteId, model, recommendation, labels, inputTokens: null, cachedInputTokens: null, outputTokens: null, costUsd: null, harness: "claude-code", promptVersion: null, createdAt: "2026-11-15T00:00:00Z", ...more,
 });
 
 const data: SummaryData = {
@@ -55,7 +55,7 @@ describe("summary", () => {
     const counts = labelCounts({ ...data, reviews: [...data.reviews, review("b", "m1", "taste_failure", ["PEDANTIC", "made-up"])] }, ["m1", "gpt-6-luna"]);
     expect(counts.labels).toEqual(["Pedantic", "missed-joke", "made-up"]);
     expect(counts.hand).toEqual([2, 1, 0]);
-    expect(counts.byModel).toEqual([{ model: "m1", counts: [2, 1, 1] }, { model: "gpt-6-luna", counts: [0, 0, 0] }]);
+    expect(counts.byModel).toEqual([{ model: "m1", counts: [2, 1, 1], notes: 3 }, { model: "gpt-6-luna", counts: [0, 0, 0], notes: 1 }]);
   });
 
   test("leaves out models with fewer than five reviews", () => {
@@ -65,9 +65,42 @@ describe("summary", () => {
 
   test("scores notewriters on their judged notes", () => {
     expect(writerLabelShares(data, LABELLERS, "w1", ["Pedantic"])).toEqual([{ share: 1, hits: 2, of: 2 }]);
-    expect(writerLabelShares(data, LABELLERS, null, ["Pedantic"])).toEqual([{ share: 0.5, hits: 2, of: 4 }]);
+    // The unsure note c is left out of the labellers' notes.
+    expect(writerLabelShares(data, LABELLERS, null, ["Pedantic"])).toEqual([{ share: 2 / 3, hits: 2, of: 3 }]);
     // Judged by a model: m1 reviewed W2's note c only, and gave it missed-joke.
     expect(writerLabelShares(data, "m1", "w2", ["Pedantic", "missed-joke"])).toEqual([{ share: 0, hits: 0, of: 1 }, { share: 1, hits: 1, of: 1 }]);
-    expect(writerStats(data).map((w) => [w.name, w.judged, w.tasteFailures, w.askedNeed, w.notNeeded])).toEqual([["W1", 2, 2, 2, 1], ["W2", 2, 0, 1, 1]]);
+    expect(writerStats(data).map((w) => [w.name, w.judged, w.decided, w.tasteFailures, w.askedNeed, w.notNeeded])).toEqual([["W1", 2, 2, 2, 2, 1], ["W2", 2, 1, 0, 1, 1]]);
+  });
+
+  test("counts as labelled only fine notes and failures with a label", () => {
+    const more: SummaryData = { ...data, verdicts: new Map([...data.verdicts, ["e", "taste_failure"], ["f", "somewhat"]]) };
+    expect([...judgedNotes(more, LABELLERS).keys()]).toEqual(["a", "b", "d"]);
+    expect([...commonNotes(more, [LABELLERS, "m1"])]).toEqual(["a", "b"]);
+    const counts = labelCounts(more, ["m1"], commonNotes(more, [LABELLERS, "m1"]));
+    expect([counts.handNotes, counts.byModel[0]!.notes]).toEqual([2, 2]);
+    expect(writerLabelShares(more, "m1", null, ["Pedantic"], new Set(["a", "b"]))).toEqual([{ share: 0.5, hits: 1, of: 2 }]);
+  });
+
+  test("keeps only run.ts reviews with the picked prompt, newest prompt first", () => {
+    const mixed: SummaryData = {
+      ...data,
+      reviews: [
+        review("a", "m1", "fine", [], { harness: null }),
+        review("b", "m1", "fine", [], { promptVersion: "v1", createdAt: "2026-11-14T00:00:00Z" }),
+        review("c", "m1", "fine", [], { promptVersion: "v2", createdAt: "2026-11-16T00:00:00Z" }),
+        review("d", "m1", "fine"),
+      ],
+    };
+    expect(promptVersions(mixed).map((p) => [p.id, p.reviews])).toEqual([["v2", 1], [UNRECORDED_PROMPT, 1], ["v1", 1]]);
+    expect(sameProtocol(mixed, null).reviews.map((r) => r.noteId)).toEqual(["b", "c", "d"]);
+    expect(sameProtocol(mixed, "v1").reviews.map((r) => r.noteId)).toEqual(["b"]);
+    expect(sameProtocol(mixed, UNRECORDED_PROMPT).reviews.map((r) => r.noteId)).toEqual(["d"]);
+  });
+
+  test("compares the models with each other on the notes both reviewed", () => {
+    const three: SummaryData = { ...data, reviews: [...data.reviews, review("a", "m3", "taste_failure"), review("b", "m3", "fine")] };
+    const result = modelAgreement(three, ["m1", "gpt-6-luna", "m3"]);
+    expect(result.pairs.map((p) => [p.a, p.b, p.agreement.notes])).toEqual([["m1", "gpt-6-luna", 1], ["m1", "m3", 2], ["gpt-6-luna", "m3", 1]]);
+    expect(result.fleissNotes).toBe(1);
   });
 });
