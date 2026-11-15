@@ -81,36 +81,39 @@ def load(model: str, prompt_version: str, note_ids: list[str] | None) -> list[di
 
 
 def confusion_panel(axis, pairs: list[tuple[str, str]], title: str) -> None:
-    """A 3x3 confusion matrix of No, Yes and Unsure: rows are the labellers,
-    columns the judge. The title scores only the notes where the labellers
-    said Yes or No. It counts the judge's Unsure as right, and gives the
-    agreement on the notes the judge decided apart."""
-    matrix = np.zeros((len(ANSWERS), len(ANSWERS)), dtype=int)
-    for human, judge in pairs:
-        matrix[ANSWERS.index(human), ANSWERS.index(judge)] += 1
+    """A confusion matrix: rows are the labellers' No and Yes, columns the
+    judge's. Notes the labellers were unsure of are left out. The judge's
+    Unsure gets a column only when the judge used it; then the title counts
+    it as right, and gives the agreement on the notes the judge decided."""
+    scored = [(human, judge) for human, judge in pairs if human != "Unsure"]
+    judge_unsure = sum(judge == "Unsure" for _, judge in pairs)
+    rows = ANSWERS[:2]
+    columns = ANSWERS if judge_unsure else rows
+    matrix = np.zeros((len(rows), len(columns)), dtype=int)
+    for human, judge in scored:
+        matrix[rows.index(human), columns.index(judge)] += 1
     axis.imshow(matrix, cmap="Blues", vmin=0)
-    for row in range(len(ANSWERS)):
-        for column in range(len(ANSWERS)):
+    for row in range(len(rows)):
+        for column in range(len(columns)):
             count = matrix[row, column]
             axis.text(column, row, str(count), ha="center", va="center", color="white" if count > matrix.max() / 2 else "black", fontsize=14)
-    axis.set_xticks(range(len(ANSWERS)), ANSWERS)
-    axis.set_yticks(range(len(ANSWERS)), ANSWERS)
+    axis.set_xticks(range(len(columns)), columns)
+    axis.set_yticks(range(len(rows)), rows)
     axis.set_xlabel("Judge")
     axis.set_ylabel("Labellers")
-    scored = [(human, judge) for human, judge in pairs if human != "Unsure"]
     if not scored:
         axis.set_title(f"{title}\nno note has both answers yet")
         return
-    judge_unsure = sum(judge == "Unsure" for _, judge in pairs)
-    unsure_counted_right = sum(judge in (human, "Unsure") for human, judge in scored)
     decided = [(human == "Yes", judge == "Yes") for human, judge in scored if judge != "Unsure"]
-    decided_text = (
-        f"judge decided: {sum(a == b for a, b in decided)}/{len(decided)} = {sum(a == b for a, b in decided) / len(decided):.0%}, κ = {cohens_kappa(decided):.2f}"
-        if decided else "the judge decided none"
-    )
+    agreed = sum(a == b for a, b in decided)
+    decided_text = f"{agreed}/{len(decided)} = {agreed / len(decided):.0%}, κ = {cohens_kappa(decided):.2f}" if decided else "none"
+    if not judge_unsure:
+        axis.set_title(f"{title}\naccuracy {decided_text}")
+        return
+    unsure_counted_right = sum(judge in (human, "Unsure") for human, judge in scored)
     axis.set_title(
         f"{title}\nUnsure counted right: {unsure_counted_right}/{len(scored)} = {unsure_counted_right / len(scored):.0%}\n"
-        f"{decided_text}\njudge Unsure on {judge_unsure} of {len(pairs)} notes ({judge_unsure / len(pairs):.0%})"
+        f"judge decided: {decided_text}\njudge Unsure on {judge_unsure} of {len(pairs)} notes ({judge_unsure / len(pairs):.0%})"
     )
 
 
@@ -162,7 +165,7 @@ def main() -> None:
         for row in rows
         if row["needs_note"] in NEEDS_NOTE_ANSWER and row["ai_needs_note"] in NEEDS_NOTE_ANSWER
     ]
-    figure, axes = plt.subplots(1, 3, figsize=(19, 6.5), gridspec_kw={"width_ratios": [1, 1, 1.6]})
+    figure, axes = plt.subplots(1, 3, figsize=(19, 6), gridspec_kw={"width_ratios": [1, 1, 1.6]})
     confusion_panel(axes[0], taste_pairs, "Taste failure?")
     confusion_panel(axes[1], needs_note_pairs, "Needs a community note?")
     label_panel(axes[2], rows)
