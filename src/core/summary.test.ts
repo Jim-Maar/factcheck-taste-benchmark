@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { labelAxes, labelCounts, modelRecall, modelStats, reviewCost, splits, writerFailures, writerStats, type Split, type SummaryData, type SummaryReview } from "./summary";
+import { labelAxes, labelCounts, modelRecall, modelStats, reviewCost, splits, writerLabelShares, writerStats, LABELLERS, type Split, type SummaryData, type SummaryReview } from "./summary";
 
 const review = (noteId: string, model: string, recommendation: "taste_failure" | "fine", labels: string[] = [], more: Partial<SummaryReview> = {}): SummaryReview => ({
   noteId, model, recommendation, labels, inputTokens: null, cachedInputTokens: null, outputTokens: null, costUsd: null, ...more,
@@ -59,8 +59,10 @@ describe("summary", () => {
   });
 
   test("scores notewriters on their judged notes", () => {
-    expect(writerFailures(data, "w1", ["Pedantic"])).toEqual([{ share: 1, hits: 2, of: 2 }]);
-    expect(writerFailures(data, null, ["Pedantic"])).toEqual([{ share: 0.5, hits: 2, of: 4 }]);
+    expect(writerLabelShares(data, LABELLERS, "w1", ["Pedantic"])).toEqual([{ share: 1, hits: 2, of: 2 }]);
+    expect(writerLabelShares(data, LABELLERS, null, ["Pedantic"])).toEqual([{ share: 0.5, hits: 2, of: 4 }]);
+    // Judged by a model: m1 reviewed W2's note c only, and gave it missed-joke.
+    expect(writerLabelShares(data, "m1", "w2", ["Pedantic", "missed-joke"])).toEqual([{ share: 0, hits: 0, of: 1 }, { share: 1, hits: 1, of: 1 }]);
     expect(writerStats(data).map((w) => [w.name, w.judged, w.tasteFailures, w.askedNeed, w.notNeeded])).toEqual([["W1", 2, 2, 2, 1], ["W2", 2, 0, 1, 1]]);
   });
 });

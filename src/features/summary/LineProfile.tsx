@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { labelText } from "./RadarChart";
+import { labelText } from "@cn/core/summary";
 
 export interface LineSeries {
   id: string;
@@ -13,14 +13,6 @@ export interface LineSeries {
 }
 
 const PLOT_HEIGHT = 200;
-
-/** The axis top for counts: the next of 2, 4, 6, 10, 20, 40, 60, 100…
- *  at or above the largest value, so the top and middle ticks are whole. */
-export function countAxisMax(largest: number): number {
-  for (let step = 1; ; step *= 10) {
-    for (const m of [2, 4, 6, 10]) if (m * step >= largest) return m * step;
-  }
-}
 
 /** One line per series across the columns, from 0 at the bottom to `max` at
  *  the top. The lines are drawn in a stretched SVG and the dots in HTML on

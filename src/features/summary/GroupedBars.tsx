@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Score } from "@cn/core/summary";
-import { labelText } from "./RadarChart";
+import { labelText } from "@cn/core/summary";
 
 export interface BarSeries {
   id: string;

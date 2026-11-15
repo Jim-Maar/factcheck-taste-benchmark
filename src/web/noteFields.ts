@@ -28,6 +28,10 @@ const VERDICT: FieldDef = {
 
 const LABELS: FieldDef = { id: "labels", label: "Label", hint: "Notes with any of the picked labels. None keeps the notes without a label", kind: "choice", multiple: true, sortable: false };
 
+/** The named lists of notes every model reviews, such as shared-100
+ *  (supabase/migrations/017_review_sets.sql). */
+const REVIEW_SET: FieldDef = { id: "review_sets", label: "Review set", hint: "Notes every model reviews, for comparing them on the same notes", kind: "choice", multiple: true, sortable: false };
+
 const AI_RECOMMENDATION: FieldDef = {
   id: "ai_recommendation",
   label: "AI recommendation",
@@ -50,6 +54,7 @@ export const NOTE_FIELDS: Record<Source, FieldDef[]> = {
   x: [
     VERDICT,
     LABELS,
+    REVIEW_SET,
     AI_RECOMMENDATION,
     {
       id: "status",

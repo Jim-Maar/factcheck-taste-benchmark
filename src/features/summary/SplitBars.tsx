@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Split, SplitPart } from "@cn/core/summary";
-import { labelText } from "./RadarChart";
+import { labelText } from "@cn/core/summary";
 
 /** The colour of each part: the commonest labels take the compare hues in
  *  order, so a label keeps its colour in every judge's bar. */

@@ -1,11 +1,26 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchSummary, labelAxes, labelCounts, modelRecall, modelStats, SPLIT_LABELS, splits, totals, writerFailures, writerStats, type Score, type SummaryData } from "@cn/core/summary";
+import {
+  fetchSummary,
+  judgedNotes,
+  labelAxes,
+  labelCounts,
+  LABELLERS,
+  labelText,
+  modelRecall,
+  modelStats,
+  SPLIT_LABELS,
+  splits,
+  totals,
+  writerLabelShares,
+  writerStats,
+  type Score,
+  type SummaryData,
+} from "@cn/core/summary";
 import { LoadFailed } from "@cn/features/query/LoadFailed";
 import { queryKeys } from "@cn/features/query/queryKeys";
 import { type BarSeries, GroupedBars } from "@cn/features/summary/GroupedBars";
-import { countAxisMax, LineProfile } from "@cn/features/summary/LineProfile";
-import { labelText, RadarChart, type RadarSeries } from "@cn/features/summary/RadarChart";
+import { LineProfile, type LineSeries } from "@cn/features/summary/LineProfile";
 import { SplitBars } from "@cn/features/summary/SplitBars";
 import { Card } from "@cn/ui/Card";
 import { chipVariants } from "@cn/ui/Chip";
@@ -95,77 +110,103 @@ function Picker({ options, picks }: { options: { id: string; name: string }[]; p
   );
 }
 
-function RadarSection({
-  title,
-  intro,
-  axes,
-  options,
-  scoresOf,
-  reference,
-  chart,
-}: {
-  title: string;
-  intro: string;
-  axes: { label: string; notes: number }[];
-  options: { id: string; name: string }[];
-  scoresOf: (id: string) => Score[];
-  reference?: RadarSeries;
-  /** Bars or lines when each note has only one or two of the labels, so a
-   *  series' scores aren't independent strengths; a radar when they are.
-   *  Bars and lines can be switched between. */
-  chart: "radar" | "bars";
-}) {
-  const [view, setView] = useState<"bars" | "lines">("bars");
+/** A row of chips of which one is on, such as the chart type or the judge. */
+function ChipChoice<T extends string>({ options, value, onChange, label }: { options: { id: T; name: string }[]; value: T; onChange: (id: T) => void; label: string }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1" role="group" aria-label={label}>
+      <span className="mr-1 text-xs text-fg-muted">{label}</span>
+      {options.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          aria-pressed={value === o.id}
+          onClick={() => onChange(o.id)}
+          className={cn(chipVariants(), value === o.id ? "border-line-strong bg-surface-hover text-fg" : "border-line text-fg-secondary hover:bg-surface-hover")}
+        >
+          {o.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The legend of a line chart; a series without a colour is the dashed
+ *  reference line. */
+function LineLegend({ series }: { series: LineSeries[] }) {
+  return (
+    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-fg-secondary">
+      {series.map((s) => (
+        <li key={s.id} className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-0.5 w-4"
+            style={s.color ? { background: s.color } : { backgroundImage: "repeating-linear-gradient(90deg, var(--cn-fg-subtle) 0 4px, transparent 4px 7px)" }}
+          />
+          {s.name}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The axis top for shares: the next of 10, 20, 40, 60 and 100% at or above
+ *  the largest, so small shares don't hug the bottom. */
+const shareAxisMax = (largest: number) => [0.1, 0.2, 0.4, 0.6, 1].find((m) => m >= largest) ?? 1;
+const percent = (v: number) => `${Math.round(v * 100)}%`;
+
+/** Scores as the line chart's series values, with "(hits of all)" details. */
+const scoreLine = (id: string, name: string, color: string | null, scores: Score[]): LineSeries => ({
+  id,
+  name,
+  color,
+  values: scores.map((x) => x.share),
+  details: scores.map((x) => (x.of ? `(${x.hits} of ${x.of})` : "")),
+});
+
+/** What the benchmark is after: how often each notewriter's notes get each
+ *  label. A judge's labels decide it, the labellers' or a model's, so the
+ *  models can stand in where hand labels are thin. Once a model writes notes
+ *  of its own, it is a notewriter here like any other. */
+function WriterLabelSection({ data, models, labels }: { data: SummaryData; models: string[]; labels: string[] }) {
+  const [judge, setJudge] = useState(LABELLERS);
+  const judged = judgedNotes(data, judge);
+  const writers = writerStats(data);
+  const notesBy = (writerId: string) => [...judged.keys()].filter((id) => data.writers.get(id)?.id === writerId).length;
+  const options = writers.map((w) => ({ id: w.id, name: w.name }));
   const picks = usePicks(options.slice(0, 3).map((o) => o.id));
-  const shown: BarSeries[] = picks.slots.flatMap((id, slot) => {
-    const option = options.find((o) => o.id === id);
-    return option ? [{ id: option.id, name: option.name, color: SLOT_COLORS[slot]!, scores: scoresOf(option.id) }] : [];
+  const all = scoreLine("all", `All notewriters (${judged.size} notes)`, null, writerLabelShares(data, judge, null, labels));
+  const shown = picks.slots.flatMap((id, slot) => {
+    const writer = writers.find((w) => w.id === id);
+    return writer ? [scoreLine(writer.id, `${writer.name} (${notesBy(writer.id)} notes)`, SLOT_COLORS[slot]!, writerLabelShares(data, judge, writer.id, labels))] : [];
   });
-  const series = reference ? [reference, ...shown] : shown;
+  const series = [all, ...shown];
+  const largest = Math.max(0, ...series.flatMap((s) => s.values.map((v) => v ?? 0)));
   return (
     <section className="space-y-3">
-      <SectionTitle>{title}</SectionTitle>
-      <p className="text-sm text-fg-secondary">{intro}</p>
-      {axes.length < (chart === "radar" ? 3 : 1) ? (
-        <p className="text-sm text-fg-muted">
-          The chart needs hand labels of at least {chart === "radar" ? "three kinds" : "one kind"}; {axes.length === 0 ? "there are none yet" : `there are ${axes.length} so far`}.
-        </p>
+      <SectionTitle>How often each notewriter&rsquo;s notes get each label</SectionTitle>
+      <p className="text-sm text-fg-secondary">
+        Of a notewriter&rsquo;s notes the judge judged, the share given each label. Lower is better. Pick the labellers, or a model to stand in where hand labels are
+        thin. The dashed line is every notewriter together. Notes on X don&rsquo;t say which model wrote them; a model&rsquo;s own notes will show up here as a notewriter.
+      </p>
+      {labels.length === 0 ? (
+        <p className="text-sm text-fg-muted">No one has given a label yet.</p>
       ) : (
         <Card className="space-y-4 p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <Picker options={options} picks={picks} />
-            {chart === "bars" && (
-              <div className="flex gap-1" role="group" aria-label="Chart">
-                {(["bars", "lines"] as const).map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    aria-pressed={view === v}
-                    onClick={() => setView(v)}
-                    className={cn(chipVariants(), view === v ? "border-line-strong bg-surface-hover text-fg" : "border-line text-fg-secondary hover:bg-surface-hover")}
-                  >
-                    {v === "bars" ? "Bars" : "Lines"}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {chart === "radar" ? (
-            <RadarChart axes={axes} series={series} label={title} />
-          ) : view === "bars" ? (
-            <GroupedBars rows={axes} series={shown} label={title} />
-          ) : (
-            <LineProfile
-              columns={axes.map((a) => ({ label: a.label, detail: `${a.notes} labelled` }))}
-              series={shown.map((s) => ({ ...s, values: s.scores.map((x) => x.share), details: s.scores.map((x) => (x.of ? `(${x.hits} of ${x.of})` : "")) }))}
-              label={title}
-              max={1}
-              format={(v) => `${Math.round(v * 100)}%`}
-            />
-          )}
+          <ChipChoice label="Judged by" options={[{ id: LABELLERS, name: "Labellers" }, ...models.map((m) => ({ id: m, name: m }))]} value={judge} onChange={setJudge} />
+          <Picker options={options} picks={picks} />
+          <LineLegend series={series} />
+          <LineProfile
+            columns={labels.map((label) => ({ label, detail: "" }))}
+            series={series}
+            label="How often each notewriter's notes get each label"
+            max={shareAxisMax(largest)}
+            format={percent}
+          />
           <details className="text-sm">
             <summary className="cursor-pointer text-fg-secondary">The numbers</summary>
-            <Table head={["", ...axes.map((a) => labelText(a.label))]} rows={series.map((s) => [s.name, ...s.scores.map(shareText)])} />
+            <Table
+              head={["", ...labels.map(labelText)]}
+              rows={series.map((s) => [s.name, ...s.values.map((v, i) => (v === null ? "–" : `${percent(v)} ${s.details![i]}`))])}
+            />
           </details>
         </Card>
       )}
@@ -173,50 +214,90 @@ function RadarSection({
   );
 }
 
-/** How many notes each model gave each label to, a line per model, with the
- *  labellers' counts dashed. Shows both how much more one model flags than
- *  another and on which labels. */
-function LabelCountSection({ data, models }: { data: SummaryData; models: string[] }) {
+/** How often each reviewer gives each label, as a share of the notes it
+ *  reviewed, so a model that reviewed more notes isn't higher for that. */
+function ReviewerLabelSection({ data, models }: { data: SummaryData; models: string[] }) {
   const counts = labelCounts(data, models);
   const reviewed = (model: string) => data.reviews.filter((r) => r.model === model).length;
-  const series = [
-    { id: "hand", name: `Labellers (${data.verdicts.size} notes)`, color: null, values: counts.hand },
+  const share = (n: number, of: number) => (of ? n / of : null);
+  const series: LineSeries[] = [
+    {
+      id: "hand",
+      name: `Labellers (${data.verdicts.size} notes)`,
+      color: null,
+      values: counts.hand.map((n) => share(n, data.verdicts.size)),
+      details: counts.hand.map((n) => `(${n} of ${data.verdicts.size})`),
+    },
     // A model keeps the colour of its place in the AI reviewers table.
-    ...counts.byModel.slice(0, 7).map((m, i) => ({ id: m.model, name: `${m.model} (${reviewed(m.model)} notes)`, color: `var(--cn-compare-${i + 1})`, values: m.counts })),
+    ...counts.byModel.slice(0, 7).map((m, i) => ({
+      id: m.model,
+      name: `${m.model} (${reviewed(m.model)} notes)`,
+      color: `var(--cn-compare-${i + 1})`,
+      values: m.counts.map((n) => share(n, reviewed(m.model))),
+      details: m.counts.map((n) => `(${n} of ${reviewed(m.model)})`),
+    })),
   ];
-  const largest = Math.max(1, ...series.flatMap((s) => s.values));
+  const largest = Math.max(0, ...series.flatMap((s) => s.values.map((v) => v ?? 0)));
   return (
     <section className="space-y-3">
-      <SectionTitle>How often each model gives each label</SectionTitle>
+      <SectionTitle>How often each reviewer gives each label</SectionTitle>
       <p className="text-sm text-fg-secondary">
-        The number of notes given each label, a line per model, counting a note with two labels under both. The dashed line is the labellers. These are counts, not shares,
-        so a model that reviewed more notes sits higher.
+        Of the notes each one reviewed, the share it gave each label, counting a note with two labels under both. The dashed line is the labellers. This is the models as
+        judges, not as writers.
       </p>
       {counts.labels.length === 0 ? (
         <p className="text-sm text-fg-muted">No one has given a label yet.</p>
       ) : (
         <Card className="space-y-4 p-4">
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-fg-secondary">
-            {series.map((s) => (
-              <li key={s.id} className="flex items-center gap-1.5">
-                <span
-                  className="inline-block h-0.5 w-4"
-                  style={s.color ? { background: s.color } : { backgroundImage: "repeating-linear-gradient(90deg, var(--cn-fg-subtle) 0 4px, transparent 4px 7px)" }}
-                />
-                {s.name}
-              </li>
-            ))}
-          </ul>
-          <LineProfile
-            columns={counts.labels.map((label, i) => ({ label, detail: `${series.reduce((n, s) => n + s.values[i]!, 0)} in all` }))}
-            series={series}
-            label="How often each model gives each label"
-            max={countAxisMax(largest)}
-            format={(v) => String(v)}
-          />
+          <LineLegend series={series} />
+          <LineProfile columns={counts.labels.map((label) => ({ label, detail: "" }))} series={series} label="How often each reviewer gives each label" max={shareAxisMax(largest)} format={percent} />
           <details className="text-sm">
             <summary className="cursor-pointer text-fg-secondary">The numbers</summary>
-            <Table head={["", ...counts.labels.map(labelText)]} rows={series.map((s) => [s.name, ...s.values])} />
+            <Table head={["", ...counts.labels.map(labelText)]} rows={series.map((s) => [s.name, ...s.values.map((v, i) => (v === null ? "–" : `${percent(v)} ${s.details![i]}`))])} />
+          </details>
+        </Card>
+      )}
+    </section>
+  );
+}
+
+/** Of the notes a labeller gave each label to, the share each picked model
+ *  gave it to as well, as grouped bars or a line per model. */
+function RecallSection({ data, axes, models }: { data: SummaryData; axes: { label: string; notes: number }[]; models: string[] }) {
+  const [view, setView] = useState<"bars" | "lines">("bars");
+  const picks = usePicks(models.slice(0, 3));
+  const labels = axes.map((a) => a.label);
+  const shown: BarSeries[] = picks.slots.flatMap((model, slot) => (model ? [{ id: model, name: model, color: SLOT_COLORS[slot]!, scores: modelRecall(data, model, labels) }] : []));
+  const title = "What each reviewer catches";
+  return (
+    <section className="space-y-3">
+      <SectionTitle>{title}</SectionTitle>
+      <p className="text-sm text-fg-secondary">Of the notes a labeller gave each label to that the model reviewed, the share the model gave it to as well. Higher is better.</p>
+      {axes.length === 0 ? (
+        <p className="text-sm text-fg-muted">No one has given a hand label yet.</p>
+      ) : (
+        <Card className="space-y-4 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <Picker options={models.map((m) => ({ id: m, name: m }))} picks={picks} />
+            <ChipChoice label="Chart" options={[{ id: "bars", name: "Bars" }, { id: "lines", name: "Lines" }]} value={view} onChange={setView} />
+          </div>
+          {view === "bars" ? (
+            <GroupedBars rows={axes} series={shown} label={title} />
+          ) : (
+            <>
+              <LineLegend series={shown.map((s) => scoreLine(s.id, s.name, s.color, s.scores))} />
+              <LineProfile
+                columns={axes.map((a) => ({ label: a.label, detail: `${a.notes} labelled` }))}
+                series={shown.map((s) => scoreLine(s.id, s.name, s.color, s.scores))}
+                label={title}
+                max={1}
+                format={percent}
+              />
+            </>
+          )}
+          <details className="text-sm">
+            <summary className="cursor-pointer text-fg-secondary">The numbers</summary>
+            <Table head={["", ...axes.map((a) => labelText(a.label))]} rows={shown.map((s) => [s.name, ...s.scores.map(shareText)])} />
           </details>
         </Card>
       )}
@@ -226,10 +307,12 @@ function LabelCountSection({ data, models }: { data: SummaryData; models: string
 
 function Summary({ data }: { data: SummaryData }) {
   const models = modelStats(data);
+  const modelIds = models.map((m) => m.model);
   const total = totals(data, models);
   const writers = writerStats(data);
   const axes = labelAxes(data);
   const axisNames = axes.map((a) => a.label);
+  const allLabels = labelCounts(data, modelIds).labels;
   const est = total.estimated ? " (part estimated)" : "";
   return (
     <div className="space-y-10">
@@ -253,9 +336,19 @@ function Summary({ data }: { data: SummaryData }) {
           labels past the {SPLIT_LABELS} commonest, counts as other. Each bar is out of its own notes, so the bars cover different notes.
         </p>
         <Card className="p-4">
-          <SplitBars splits={splits(data, axisNames, models.map((m) => m.model))} labels={axisNames.slice(0, SPLIT_LABELS)} />
+          <SplitBars splits={splits(data, axisNames, modelIds)} labels={axisNames.slice(0, SPLIT_LABELS)} />
         </Card>
       </section>
+
+      <section className="space-y-3">
+        <SectionTitle>Notewriters</SectionTitle>
+        <Table
+          head={["Notewriter", "Judged", "Taste failures", "Rate", "Post didn't need a note"]}
+          rows={writers.map((w) => [w.name, w.judged, w.tasteFailures, pct(w.tasteFailures, w.judged), w.askedNeed ? `${pct(w.notNeeded, w.askedNeed)} of ${w.askedNeed}` : "–"])}
+        />
+      </section>
+
+      <WriterLabelSection data={data} models={modelIds} labels={allLabels} />
 
       <section className="space-y-3">
         <SectionTitle>AI reviewers</SectionTitle>
@@ -277,34 +370,9 @@ function Summary({ data }: { data: SummaryData }) {
         />
       </section>
 
-      <LabelCountSection data={data} models={models.map((m) => m.model)} />
+      <ReviewerLabelSection data={data} models={modelIds} />
 
-      <RadarSection
-        title="What each reviewer catches"
-        intro="For each label, the notes a labeller gave it to that the model reviewed, and the share of those the model gave it to as well. Longer is better."
-        axes={axes}
-        options={models.map((m) => ({ id: m.model, name: m.model }))}
-        scoresOf={(model) => modelRecall(data, model, axisNames)}
-        chart="bars"
-      />
-
-      <section className="space-y-3">
-        <SectionTitle>Notewriters</SectionTitle>
-        <Table
-          head={["Notewriter", "Judged", "Taste failures", "Rate", "Post didn't need a note"]}
-          rows={writers.map((w) => [w.name, w.judged, w.tasteFailures, pct(w.tasteFailures, w.judged), w.askedNeed ? `${pct(w.notNeeded, w.askedNeed)} of ${w.askedNeed}` : "–"])}
-        />
-      </section>
-
-      <RadarSection
-        title="Where notewriters fail"
-        intro="For each label, the share of a notewriter's judged notes a labeller gave it to. Further out is worse. The scale grows to fit the largest share shown. The dashed outline is every notewriter together."
-        axes={axes}
-        options={writers.map((w) => ({ id: w.id, name: w.name }))}
-        scoresOf={(id) => writerFailures(data, id, axisNames)}
-        reference={{ id: "all", name: "All notewriters", color: null, scores: writerFailures(data, null, axisNames) }}
-        chart="radar"
-      />
+      <RecallSection data={data} axes={axes} models={modelIds} />
     </div>
   );
 }

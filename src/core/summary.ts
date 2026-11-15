@@ -153,12 +153,29 @@ export function modelRecall(data: SummaryData, model: string, axes: string[]): S
   });
 }
 
-/** How often a notewriter falls into each label: of its notes a labeller
- *  judged, the share given the label. */
-export function writerFailures(data: SummaryData, writerId: string | null, axes: string[]): Score[] {
-  const judged = [...data.verdicts.keys()].filter((id) => writerId === null || data.writers.get(id)?.id === writerId);
-  return axes.map((label) => score(judged.filter((id) => data.handLabels.get(id)?.some((l) => sameLabel(l, label))).length, judged.length));
+/** The judge that stands for the labellers, beside the models. */
+export const LABELLERS = "labellers";
+
+/** The notes a judge judged, with the labels it gave each: the labellers'
+ *  verdicts and hand labels, or a model's reviews. */
+export function judgedNotes(data: SummaryData, judge: string): Map<string, string[]> {
+  if (judge === LABELLERS) return new Map([...data.verdicts.keys()].map((id) => [id, data.handLabels.get(id) ?? []]));
+  return new Map(data.reviews.filter((r) => r.model === judge).map((r) => [r.noteId, r.labels]));
 }
+
+/** How often a notewriter's notes get each label from a judge: of its notes
+ *  the judge judged, the share given the label. A null writer is every
+ *  notewriter together. */
+export function writerLabelShares(data: SummaryData, judge: string, writerId: string | null, labels: string[]): Score[] {
+  const notes = [...judgedNotes(data, judge)].filter(([id]) => writerId === null || data.writers.get(id)?.id === writerId);
+  return labels.map((label) => score(notes.filter(([, ls]) => ls.some((l) => sameLabel(l, label))).length, notes.length));
+}
+
+/** A label as stored ("missed-joke") as a reader sees it ("Missed joke"). */
+export const labelText = (label: string) => {
+  const text = label.replace(/-/g, " ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
 
 export interface WriterStats {
   id: string;
