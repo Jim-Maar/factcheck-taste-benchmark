@@ -1,5 +1,6 @@
 """How often a judge model gives the same answers as the labellers, as the
 standard figures of a classification paper: a confusion matrix for "Taste
+failure, and no note needed?" (the eval set's question), one for "Taste
 failure?", one for "Needs a community note?", and precision and recall for
 each label with 95% Wilson intervals. Only notes a labeller answered count.
 Notes the labellers called Somewhat a taste failure are left out. Both the
@@ -80,6 +81,14 @@ def load(model: str, prompt_version: str, note_ids: list[str] | None) -> list[di
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
+def eval_set_answer(taste_failure: str, needs_note: str) -> str:
+    """Whether a note belongs in the eval set's no-note group: a taste failure
+    on a post that needs no community note. Unsure when either answer is."""
+    if "Unsure" in (taste_failure, needs_note):
+        return "Unsure"
+    return "Yes" if taste_failure == "Yes" and needs_note == "No" else "No"
+
+
 def confusion_panel(axis, pairs: list[tuple[str, str]], title: str) -> None:
     """A confusion matrix: rows are the labellers' No and Yes, columns the
     judge's. Notes the labellers were unsure of are left out. The judge's
@@ -107,8 +116,11 @@ def confusion_panel(axis, pairs: list[tuple[str, str]], title: str) -> None:
     decided = [(human == "Yes", judge == "Yes") for human, judge in scored if judge != "Unsure"]
     agreed = sum(a == b for a, b in decided)
     decided_text = f"{agreed}/{len(decided)} = {agreed / len(decided):.0%}, κ = {cohens_kappa(decided):.2f}" if decided else "none"
+    both_yes = sum(a and b for a, b in decided)
+    hand_yes, judge_yes = sum(a for a, _ in decided), sum(b for _, b in decided)
+    recall_precision = f"recall {both_yes}/{hand_yes}, precision {both_yes}/{judge_yes}"
     if not judge_unsure:
-        axis.set_title(f"{title}\naccuracy {decided_text}")
+        axis.set_title(f"{title}\naccuracy {decided_text}\n{recall_precision}")
         return
     unsure_counted_right = sum(judge in (human, "Unsure") for human, judge in scored)
     axis.set_title(
@@ -165,10 +177,17 @@ def main() -> None:
         for row in rows
         if row["needs_note"] in NEEDS_NOTE_ANSWER and row["ai_needs_note"] in NEEDS_NOTE_ANSWER
     ]
-    figure, axes = plt.subplots(1, 3, figsize=(19, 6), gridspec_kw={"width_ratios": [1, 1, 1.6]})
-    confusion_panel(axes[0], taste_pairs, "Taste failure?")
-    confusion_panel(axes[1], needs_note_pairs, "Needs a community note?")
-    label_panel(axes[2], rows)
+    eval_set_pairs = [
+        (eval_set_answer(HAND_VERDICT_ANSWER[row["verdict"]], NEEDS_NOTE_ANSWER[row["needs_note"]]),
+         eval_set_answer(JUDGE_RECOMMENDATION_ANSWER[row["recommendation"]], NEEDS_NOTE_ANSWER[row["ai_needs_note"]]))
+        for row in rows
+        if row["verdict"] in HAND_VERDICT_ANSWER and row["needs_note"] in NEEDS_NOTE_ANSWER and row["ai_needs_note"] in NEEDS_NOTE_ANSWER
+    ]
+    figure, axes = plt.subplots(1, 4, figsize=(24, 6.3), gridspec_kw={"width_ratios": [1, 1, 1, 1.6]})
+    confusion_panel(axes[0], eval_set_pairs, "Taste failure, and no note needed?")
+    confusion_panel(axes[1], taste_pairs, "Taste failure?")
+    confusion_panel(axes[2], needs_note_pairs, "Needs a community note?")
+    label_panel(axes[3], rows)
     figure.suptitle(f"{model} (prompt {prompt_version}) vs. labellers on {len(rows)} hand-labelled X notes")
     figure.tight_layout()
     figure.savefig(output, dpi=150)
