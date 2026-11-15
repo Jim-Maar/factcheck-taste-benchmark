@@ -9,9 +9,10 @@ judge's Unsure as right, and say how often the judge used it.
 Run from the repository root:
 
     uv run --with matplotlib --with "psycopg[binary]" --with python-dotenv \
-        scripts/ai/agreement_plot.py <model> <prompt version> <output.png> [<note ids file>]
+        scripts/ai/agreement_plot.py <model> <prompt version> <output.png> [<note ids file>] [--eval-set-only]
 
 The optional file lists note ids, one per line. Then only those notes count.
+With --eval-set-only, the figure has only the eval set's matrix.
 
 The prompt version is the commit run.ts records on each review, so reviews
 made with an older prompt stay out.
@@ -160,10 +161,12 @@ def label_panel(axis, rows: list[dict]) -> None:
 
 
 def main() -> None:
-    if len(sys.argv) not in (4, 5):
+    eval_set_only = "--eval-set-only" in sys.argv
+    arguments = [argument for argument in sys.argv[1:] if argument != "--eval-set-only"]
+    if len(arguments) not in (3, 4):
         sys.exit(__doc__)
-    model, prompt_version, output = sys.argv[1:4]
-    note_ids = open(sys.argv[4]).read().split() if len(sys.argv) == 5 else None
+    model, prompt_version, output = arguments[:3]
+    note_ids = open(arguments[3]).read().split() if len(arguments) == 4 else None
     rows = load(model, prompt_version, note_ids)
     if not rows:
         sys.exit(f"No reviews by {model} with prompt {prompt_version} on hand-labelled notes")
@@ -183,6 +186,14 @@ def main() -> None:
         for row in rows
         if row["verdict"] in HAND_VERDICT_ANSWER and row["needs_note"] in NEEDS_NOTE_ANSWER and row["ai_needs_note"] in NEEDS_NOTE_ANSWER
     ]
+    if eval_set_only:
+        figure, axis = plt.subplots(figsize=(5.5, 5.5))
+        confusion_panel(axis, eval_set_pairs, "Taste failure, and no note needed?")
+        figure.suptitle(f"{model} (prompt {prompt_version})", fontsize=10)
+        figure.tight_layout()
+        figure.savefig(output, dpi=150)
+        print(f"Saved {output}: {len(eval_set_pairs)} notes")
+        return
     figure, axes = plt.subplots(1, 4, figsize=(24, 6.3), gridspec_kw={"width_ratios": [1, 1, 1, 1.6]})
     confusion_panel(axes[0], eval_set_pairs, "Taste failure, and no note needed?")
     confusion_panel(axes[1], taste_pairs, "Taste failure?")
