@@ -179,6 +179,20 @@
   --cn-series-2: rgb(var(--cn-blue-400));
   --cn-series-3: rgb(var(--cn-blue-200));
 
+  /* Hues for things compared side by side in a chart, such as the models or
+   * the labels on the Summary tab, used in this order. Checked together for
+   * colour blindness: any three at once, or all seven as neighbours in one
+   * bar. A label inside one is white, but near-black on 4. */
+  --cn-compare-1: #2a78d6;
+  --cn-compare-2: #eb6834;
+  --cn-compare-3: #1baf7a;
+  --cn-compare-4: #eda100;
+  --cn-compare-5: #e87ba4;
+  --cn-compare-6: #008300;
+  --cn-compare-7: #6250d6;
+  /* The part of a split bar that isn't one of them, such as fine notes. */
+  --cn-compare-rest: rgb(var(--cn-gray-300));
+
   /* Type. The extension uses this scale. The website reads at a larger size,
    * see .cn-reading-scale below. */
   /* The type of Substack, where most of our readers read (Jim, 2026-09-28).
@@ -296,4 +310,12 @@
   --cn-series-1: rgb(var(--cn-blue-500));
   --cn-series-2: rgb(var(--cn-blue-700));
   --cn-series-3: rgb(var(--cn-blue-900));
+  --cn-compare-1: #3987e5;
+  --cn-compare-2: #d95926;
+  --cn-compare-3: #199e70;
+  --cn-compare-4: #c98500;
+  --cn-compare-5: #d55181;
+  --cn-compare-6: #0ca30c;
+  --cn-compare-7: #9085e9;
+  --cn-compare-rest: rgb(var(--cn-gray-600));
 }

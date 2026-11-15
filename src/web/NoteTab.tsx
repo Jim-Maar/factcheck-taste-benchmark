@@ -15,6 +15,9 @@ import { useMomentFor, useNoteFacets, useNoteList, useNoteSummary } from "./quer
 const SEARCH_DELAY_MS = 300;
 const SEARCH_PARAM = "q";
 
+/** Where the browser remembers a tab's last filters and sorts. */
+export const queryStorageKey = (source: Source) => `taste:${source}:query`;
+
 const formatCount = (n: number) => n.toLocaleString("en-US");
 
 /** The search box's text, kept in the page address so a link shows the same
@@ -75,7 +78,7 @@ function NoteList<S extends Source>({ source, request, renderCard }: { source: S
  *  remembers each tab's last ones. Adapted from the Overview of
  *  commonnotes.net's X notewriter page. */
 export function NoteTab<S extends Source>({ source, fields, renderCard }: { source: S; fields: readonly FieldDef[]; renderCard: (card: NoteCards[S]) => ReactNode }) {
-  const [query, setQuery] = useFieldQuery({ storageKey: `taste:${source}:query`, fields, displayOptions: [], defaults: DEFAULT_QUERY });
+  const [query, setQuery] = useFieldQuery({ storageKey: queryStorageKey(source), fields, displayOptions: [], defaults: DEFAULT_QUERY });
   const [searchText, search, setSearchText] = useSearch();
   // Date filters count back from this moment, which is taken anew whenever
   // the filters change.

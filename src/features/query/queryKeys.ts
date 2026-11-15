@@ -9,5 +9,7 @@ export const queryKeys = {
   /** The counts in the Filter menu. */
   facets: (source: string, columns?: string[], request?: unknown) => (columns === undefined ? ["facets", source] : ["facets", source, columns, request]) as readonly unknown[],
   labels: ["labels"] as const,
+  /** Everything the Summary tab counts. */
+  tasteSummary: ["tasteSummary"] as const,
   sourceDetails: (noteId: string) => ["sourceDetails", noteId] as const,
 };
