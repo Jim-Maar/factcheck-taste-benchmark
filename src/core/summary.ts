@@ -42,6 +42,45 @@ export interface SummaryData {
   labelNames: string[];
   /** Who wrote each judged or reviewed note. */
   writers: Map<string, { id: string; name: string }>;
+  /** How X rated each judged or reviewed note: helpful or not_helpful. */
+  xStatus?: Map<string, string>;
+}
+
+/** A taste-failure count and what it is out of, among the notes X rated
+ *  helpful and among those it rated not helpful. Rates are shown this way
+ *  because a sample can hold far more not-helpful notes than X does (about
+ *  3.5%), and those fail far more often, so one pooled rate would mislead. */
+export interface ByStatus {
+  helpful: { failures: number; notes: number };
+  notHelpful: { failures: number; notes: number };
+}
+
+/** The share of X's AI notes rated not helpful (scripts/ai/sets/strat-1000.json:
+ *  1,164 of 32,996 on posts still up, our notewriter left out). */
+export const X_NOT_HELPFUL_SHARE = 0.035;
+
+/** One taste-failure rate weighted to X's own mix of helpful and not-helpful
+ *  notes, so a sample with more not-helpful notes than X doesn't inflate it.
+ *  With only one side present, that side's rate. Null with neither. */
+export function weightedRate(b: ByStatus): number | null {
+  const h = b.helpful.notes ? b.helpful.failures / b.helpful.notes : null;
+  const n = b.notHelpful.notes ? b.notHelpful.failures / b.notHelpful.notes : null;
+  if (h === null) return n;
+  if (n === null) return h;
+  return (1 - X_NOT_HELPFUL_SHARE) * h + X_NOT_HELPFUL_SHARE * n;
+}
+
+/** Splits notes by X's status, counting those `failed` says failed. */
+export function byStatus(data: SummaryData, noteIds: string[], failed: (noteId: string) => boolean): ByStatus {
+  const split: ByStatus = { helpful: { failures: 0, notes: 0 }, notHelpful: { failures: 0, notes: 0 } };
+  for (const id of noteIds) {
+    const status = data.xStatus?.get(id);
+    const side = status === "helpful" ? split.helpful : status === "not_helpful" ? split.notHelpful : null;
+    if (!side) continue;
+    side.notes++;
+    if (failed(id)) side.failures++;
+  }
+  return split;
 }
 
 /** What the Summary calls an estimated cost. LIST_PRICES were copied by hand
@@ -94,6 +133,8 @@ export interface ModelStats {
   model: string;
   reviews: number;
   tasteFailures: number;
+  /** Its taste-failure rate among notes X rated helpful and not helpful. */
+  failuresByStatus: ByStatus;
   /** How its calls agree with the labellers', on the notes they called a
    *  taste failure or fine. */
   vsLabellers: Agreement;
@@ -127,6 +168,7 @@ export function modelStats(data: SummaryData): ModelStats[] {
         model,
         reviews: reviews.length,
         tasteFailures,
+        failuresByStatus: byStatus(data, reviews.map((r) => r.noteId), (id) => reviews.find((r) => r.noteId === id)?.recommendation === "taste_failure"),
         vsLabellers: vs,
         costed: costs.length,
         costUsd: costs.reduce((s, c) => s + c.usd, 0),
@@ -176,6 +218,9 @@ export interface Totals {
   tasteFailures: number;
   /** Judged notes that weren't unsure: the taste-failure rate's denominator. */
   decided: number;
+  /** The labellers' taste-failure rate among decided notes X rated helpful
+   *  and not helpful. */
+  failuresByStatus: ByStatus;
   labelled: number;
   reviews: number;
   models: number;
@@ -189,6 +234,7 @@ export function totals(data: SummaryData, models: ModelStats[]): Totals {
     judged: data.verdicts.size,
     tasteFailures: [...data.verdicts.values()].filter((v) => v === "taste_failure").length,
     decided: [...data.verdicts.values()].filter((v) => v !== "unsure").length,
+    failuresByStatus: byStatus(data, [...data.verdicts].filter(([, v]) => v !== "unsure").map(([id]) => id), (id) => data.verdicts.get(id) === "taste_failure"),
     labelled: [...data.handLabels.values()].filter((l) => l.length).length,
     reviews: data.reviews.length,
     models: models.length,

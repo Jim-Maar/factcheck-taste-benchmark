@@ -23,6 +23,8 @@ import {
   writerStats,
   withoutTriedModels,
   type Score,
+  type ByStatus,
+  weightedRate,
   type SummaryData,
 } from "@cn/core/summary";
 import { fetchSummary } from "@cn/core/summaryFetch";
@@ -41,6 +43,27 @@ const SLOT_COLORS = ["var(--cn-compare-1)", "var(--cn-compare-2)", "var(--cn-com
 const pct = (part: number, whole: number) => (whole ? `${Math.round((100 * part) / whole)}%` : "–");
 const usd = (n: number) => (n === 0 ? "$0" : n < 0.01 ? `$${n.toFixed(4)}` : `$${n.toFixed(2)}`);
 const tokens = (n: number | null) => (n === null ? "–" : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
+/** The split behind a weighted rate, for its tooltip. */
+const statusText = (b: ByStatus) =>
+  [b.helpful.notes && `${pct(b.helpful.failures, b.helpful.notes)} of ${b.helpful.notes} helpful`, b.notHelpful.notes && `${pct(b.notHelpful.failures, b.notHelpful.notes)} of ${b.notHelpful.notes} not helpful`]
+    .filter(Boolean)
+    .join(", ") + ", weighted to X's mix (96.5% helpful)";
+
+/** A share as a small bar and its percentage, with the detail on hover. */
+function Rate({ value, title }: { value: number | null; title?: string }) {
+  if (value === null) return <span className="text-fg-muted">–</span>;
+  return (
+    <span className="inline-flex items-center justify-end gap-2" title={title}>
+      <span className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-hover" aria-hidden>
+        <span className="block h-full rounded-full" style={{ width: `${Math.round(value * 100)}%`, background: "var(--cn-compare-1)" }} />
+      </span>
+      <span className="w-9 text-right">{percent(value)}</span>
+    </span>
+  );
+}
+
+/** One muted line under a section title. */
+const Hint = ({ children }: { children: ReactNode }) => <p className="text-xs text-fg-muted">{children}</p>;
 const ci = ([low, high]: [number, number]) => `${Math.round(low * 100)}–${Math.round(high * 100)}%`;
 /** A share with its count and 95% Wilson interval. */
 const shareText = (s: Score) => (s.share === null ? "–" : `${Math.round(s.share * 100)}% (${s.hits}/${s.of}, ${ci(wilson(s.hits, s.of))})`);
@@ -199,13 +222,7 @@ function WriterLabelSection({ data, models, labels }: { data: SummaryData; model
   return (
     <section className="space-y-3">
       <SectionTitle>How often each notewriter&rsquo;s notes get each label</SectionTitle>
-      <p className="text-sm text-fg-secondary">
-        Of a notewriter&rsquo;s notes the judge judged, the share given each label. Lower is better. Pick the labellers, or a model to stand in where hand labels are
-        thin. The labellers&rsquo; notes are those they called fine, or a taste failure and gave at least one label; unsure, somewhat and unlabelled failures are left
-        out. With same notes, every judge is out of the {same.size} notes the labellers and every model judged, so switching judge compares like with like; with all its
-        notes, each judge is out of its own, given beside each name. The dashed line is every notewriter together. Notes on X don&rsquo;t say which model wrote them; a
-        model&rsquo;s own notes will show up here as a notewriter.
-      </p>
+      <Hint>Share of each notewriter&rsquo;s notes given each label. Lower is better. Dashed: all notewriters.</Hint>
       {labels.length === 0 ? (
         <p className="text-sm text-fg-muted">No one has given a label yet.</p>
       ) : (
@@ -265,11 +282,7 @@ function ReviewerLabelSection({ data, models }: { data: SummaryData; models: str
   return (
     <section className="space-y-3">
       <SectionTitle>How often each reviewer gives each label</SectionTitle>
-      <p className="text-sm text-fg-secondary">
-        Every judge is out of the same {same.size} notes: those every model reviewed and the labellers called fine, or a taste failure with at least one label (unsure,
-        somewhat and unlabelled failures are left out, since a model labels every failure it calls). The share is of those notes, counting a note with two labels under
-        both. The dashed line is the labellers. This is the models as judges, not as writers.
-      </p>
+      <Hint>Share of the same {same.size} notes each judge gave each label. Dashed: labellers.</Hint>
       {same.size === 0 ? (
         <p className="text-sm text-fg-muted">No note has been both fully labelled and reviewed by every model.</p>
       ) : counts.labels.length === 0 ? (
@@ -299,10 +312,7 @@ function RecallSection({ data, axes, models }: { data: SummaryData; axes: { labe
   return (
     <section className="space-y-3">
       <SectionTitle>{title}</SectionTitle>
-      <p className="text-sm text-fg-secondary">
-        Of the notes a labeller gave each label to that the model reviewed, the share the model gave it to as well. Higher is better. The numbers and the tooltip give a
-        95% Wilson interval; with a handful of notes it spans most of the scale.
-      </p>
+      <Hint>Of the notes labellers gave a label, the share the model also gave it. Higher is better.</Hint>
       {axes.length === 0 ? (
         <p className="text-sm text-fg-muted">No one has given a hand label yet.</p>
       ) : (
@@ -345,11 +355,9 @@ function ProtocolChoice({ raw, prompt, onChange, data }: { raw: SummaryData; pro
       {versions.length > 0 && prompt !== null && (
         <ChipChoice label="Prompt" options={versions.map((v) => ({ id: v.id, name: `${promptName(v.id)} (${v.reviews})` }))} value={prompt} onChange={onChange} />
       )}
-      <p className="text-xs text-fg-muted">
-        Only reviews made by scripts/ai/run.ts with {versions.length > 0 ? "the prompt picked here (newest first)" : "any prompt"}, so every model is scored on the same
-        instructions; {byHand} made by hand are left out. Reviews under this: {byModel.length ? byModel.join(", ") : "none"}
-. Models with fewer than {MIN_REVIEWS} are left out.
-      </p>
+      <Hint>
+        Reviews: {byModel.length ? byModel.join(" · ") : "none"}. {byHand} hand-made and models under {MIN_REVIEWS} reviews left out.
+      </Hint>
     </Card>
   );
 }
@@ -364,33 +372,27 @@ function PrevalenceSection({ data, models }: { data: SummaryData; models: Return
   return (
     <section className="space-y-3">
       <SectionTitle>Taste failures beyond the labelled notes</SectionTitle>
-      <p className="text-sm text-fg-secondary">
-        A model&rsquo;s own taste-failure rate on every note it reviewed, corrected for the failures it misses (sensitivity) and the false alarms it gives
-        (specificity) on the notes the labellers called a taste failure or fine (Rogan&ndash;Gladen). The interval is 95% and carries the uncertainty of all three. The
-        reviewed notes aren&rsquo;t a random sample of X&rsquo;s notes, so this is the rate on those notes; scripts/ai/compare.ts --prevalence weights a stratified set back to
-        the population.
-      </p>
+      <Hint>Each model&rsquo;s raw rate, corrected for what it misses and over-calls on labelled notes.</Hint>
       <Table
-        head={["Model", "Own rate", "Sensitivity", "Specificity", "Corrected rate"]}
+        head={["Model", "Raw", "Catches", "Clears", "Corrected (95% CI)"]}
         rows={models.map((m) => {
           const p = m.prevalence;
           const vs = m.vsLabellers;
           return [
             m.model,
-            `${pct(m.tasteFailures, m.reviews)} of ${m.reviews}`,
-            p.sensitivity === null ? "–" : `${percent(p.sensitivity)} of ${vs.caught + vs.missed}`,
-            p.specificity === null ? "–" : `${percent(p.specificity)} of ${vs.cleared + vs.falseAlarms}`,
+            <Rate key="raw" value={m.reviews ? m.tasteFailures / m.reviews : null} title={`${m.tasteFailures} of ${m.reviews}`} />,
+            <Rate key="sens" value={p.sensitivity} title={`${vs.caught} of ${vs.caught + vs.missed} labelled failures`} />,
+            <Rate key="spec" value={p.specificity} title={`${vs.cleared} of ${vs.cleared + vs.falseAlarms} labelled fine notes`} />,
             prevalenceText(p),
           ];
         })}
       />
       {between.pairs.length > 0 && (
         <>
-          <p className="text-sm text-fg-secondary">
-            How the models agree with each other, as Cohen&rsquo;s κ on the notes both reviewed
-            {between.fleiss !== null ? `; Fleiss' κ of all ${models.length} on the ${between.fleissNotes} notes all reviewed is ${between.fleiss.toFixed(2)}` : ""}.
-          </p>
-          <Table head={["Models", "Notes both reviewed", "Agreement", "κ"]} rows={between.pairs.map((p) => [`${p.a} and ${p.b}`, p.agreement.notes, pct(Math.round(p.agreement.agreement * p.agreement.notes), p.agreement.notes), kappaText(p.agreement)])} />
+          <Hint>
+            Model vs model{between.fleiss !== null ? ` · Fleiss' κ ${between.fleiss.toFixed(2)} on ${between.fleissNotes} notes` : ""}
+          </Hint>
+          <Table head={["Models", "Notes", "Agree", "κ"]} rows={between.pairs.map((p) => [`${p.a} and ${p.b}`, p.agreement.notes, pct(Math.round(p.agreement.agreement * p.agreement.notes), p.agreement.notes), kappaText(p.agreement)])} />
         </>
       )}
     </section>
@@ -413,26 +415,23 @@ function Summary({ raw }: { raw: SummaryData }) {
       <ProtocolChoice raw={raw} prompt={prompt} onChange={setPicked} data={data} />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Notes judged" value={total.judged} detail={`${total.labelled} with labels`} />
+        <Stat label="Notes judged" value={total.judged} detail={`${total.labelled} labelled · ${total.judged - total.decided} unsure`} />
         <Stat
-          label="Taste failures"
-          value={total.tasteFailures}
-          detail={`${pct(total.tasteFailures, total.decided)} of ${total.decided} decided (${total.judged - total.decided} unsure left out)`}
+          label="Taste-failure rate"
+          value={weightedRate(total.failuresByStatus) === null ? "–" : percent(weightedRate(total.failuresByStatus)!)}
+          detail={<span title={statusText(total.failuresByStatus)}>{total.tasteFailures} failures · weighted to X</span>}
         />
-        <Stat label="AI reviews" value={total.reviews} detail={`${total.models} models, ${total.reviewedNotes} notes`} />
+        <Stat label="AI reviews" value={total.reviews} detail={`${total.models} ${total.models === 1 ? "model" : "models"} · ${total.reviewedNotes} notes`} />
         <Stat
           label="Post needed a note"
-          value={total.needsNote.yes}
-          detail={`of ${total.needsNote.yes + total.needsNote.no + total.needsNote.unsure} asked; ${total.needsNote.no} didn't, ${total.needsNote.unsure} unsure`}
+          value={pct(total.needsNote.yes, total.needsNote.yes + total.needsNote.no)}
+          detail={`${total.needsNote.yes} yes · ${total.needsNote.no} no · ${total.needsNote.unsure} unsure`}
         />
       </div>
 
       <section className="space-y-3">
         <SectionTitle>How each judge splits the notes</SectionTitle>
-        <p className="text-sm text-fg-secondary">
-          Every note the labellers judged, and every note each model reviewed, by what they called it. A failure with several labels counts under the commonest; a failure with no label yet, or only
-          labels past the {SPLIT_LABELS} commonest, counts as other. Each bar is out of its own notes, so the bars cover different notes.
-        </p>
+        <Hint>Each note counted once, under its most common label, so bars add up to 100%. Every label is counted in &ldquo;How often each reviewer gives each label&rdquo;.</Hint>
         <Card className="p-4">
           <SplitBars splits={splits(data, axisNames, modelIds)} labels={axisNames.slice(0, SPLIT_LABELS)} />
         </Card>
@@ -440,16 +439,13 @@ function Summary({ raw }: { raw: SummaryData }) {
 
       <section className="space-y-3">
         <SectionTitle>Notewriters</SectionTitle>
-        <p className="text-sm text-fg-secondary">The rate is of the decided notes: those the labellers didn&rsquo;t mark unsure. Somewhat counts as not a taste failure.</p>
         <Table
-          head={["Notewriter", "Judged", "Decided", "Taste failures", "Rate", "Post didn't need a note"]}
+          head={["Notewriter", "Judged", "Taste failures", "No note needed"]}
           rows={writers.map((w) => [
             w.name,
             w.judged,
-            w.decided,
-            w.tasteFailures,
-            pct(w.tasteFailures, w.decided),
-            w.askedNeed ? `${pct(w.notNeeded, w.askedNeed)} of ${w.askedNeed}` : "–",
+            <Rate key="f" value={w.decided ? w.tasteFailures / w.decided : null} title={`${w.tasteFailures} of ${w.decided} decided`} />,
+            <Rate key="n" value={w.askedNeed ? w.notNeeded / w.askedNeed : null} title={`${w.notNeeded} of ${w.askedNeed} asked`} />,
           ])}
         />
       </section>
@@ -458,26 +454,27 @@ function Summary({ raw }: { raw: SummaryData }) {
 
       <section className="space-y-3">
         <SectionTitle>AI reviewers</SectionTitle>
-        <p className="text-sm text-fg-secondary">
-          The model is compared with the labellers only on notes they called a taste failure or fine. κ (Cohen&rsquo;s kappa) is agreement beyond chance: 0 is no better
-          than guessing, 1 is perfect; under 10 notes it isn&rsquo;t shown. The baseline is how often always giving the labellers&rsquo; commoner answer would agree.
-          Intervals are 95%. Cost is per model and never added up across models: a cost marked {ESTIMATED_COST} is worked out from the tokens at the provider&rsquo;s
-          list price, because the harness reported no dollars.
-        </p>
+        <Hint>κ vs labellers: 0 = chance, 1 = perfect. Hover for details.</Hint>
         <Table
-          head={["Model", "Reviews", "Taste failure", "κ with labellers", "Agreement", "Baseline", "Failures caught", "Cost", "Per review", "Tokens in / out"]}
-          rows={models.map((m) => [
-            m.model,
-            m.reviews,
-            pct(m.tasteFailures, m.reviews),
-            kappaText(m.vsLabellers),
-            m.vsLabellers.notes ? `${pct(Math.round(m.vsLabellers.agreement * m.vsLabellers.notes), m.vsLabellers.notes)} (${ci(m.vsLabellers.agreementCi)}) of ${m.vsLabellers.notes}` : "–",
-            m.vsLabellers.notes ? percent(m.vsLabellers.baseline) : "–",
-            m.vsLabellers.caught + m.vsLabellers.missed ? `${m.vsLabellers.caught} of ${m.vsLabellers.caught + m.vsLabellers.missed}` : "–",
-            m.costed ? `${usd(m.costUsd)}${m.estimated ? ` ${ESTIMATED_COST}` : ""}${m.costed < m.reviews ? ` (${m.costed} of ${m.reviews})` : ""}` : "unknown",
-            m.costed ? `${usd(m.costUsd / m.costed)}${m.estimated ? " est." : ""}` : "–",
-            `${tokens(m.avgInputTokens)} / ${tokens(m.avgOutputTokens)}`,
-          ])}
+          head={["Model", "Reviews", "Taste failures", "κ", "Caught", "Cost / review"]}
+          rows={models.map((m) => {
+            const vs = m.vsLabellers;
+            return [
+              m.model,
+              m.reviews,
+              <Rate key="f" value={weightedRate(m.failuresByStatus)} title={statusText(m.failuresByStatus)} />,
+              <span
+                key="k"
+                title={vs.notes ? `${pct(vs.caught + vs.cleared, vs.notes)} agree on ${vs.notes} notes (${ci(vs.agreementCi)}); always-majority baseline ${percent(vs.baseline)}` : undefined}
+              >
+                {kappaText(vs)}
+              </span>,
+              vs.caught + vs.missed ? `${vs.caught}/${vs.caught + vs.missed}` : "–",
+              <span key="c" title={m.costed ? `${usd(m.costUsd)} for ${m.costed} reviews · ${tokens(m.avgInputTokens)} in / ${tokens(m.avgOutputTokens)} out per review` : undefined}>
+                {m.costed ? `${usd(m.costUsd / m.costed)}${m.estimated ? " est." : ""}` : "–"}
+              </span>,
+            ];
+          })}
         />
       </section>
 
@@ -486,6 +483,19 @@ function Summary({ raw }: { raw: SummaryData }) {
       <ReviewerLabelSection data={data} models={modelIds} />
 
       <RecallSection data={data} axes={axes} models={modelIds} />
+
+      <details className="text-xs text-fg-muted">
+        <summary className="cursor-pointer">How these are computed</summary>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>Only reviews made by scripts/ai/run.ts with the picked prompt; hand-made reviews and models under {MIN_REVIEWS} reviews are left out.</li>
+          <li>Taste-failure rates leave out unsure verdicts and are weighted to X&rsquo;s mix (96.5% helpful), since samples hold more not-helpful notes than X. Hover for the split.</li>
+          <li>κ (Cohen&rsquo;s kappa) is on notes labellers called a taste failure or fine; hidden under 10 notes. Intervals are 95% (bootstrap for κ, Wilson for shares).</li>
+          <li>Label shares: labellers count only fine notes and failures with a label. A note with two labels counts under both.</li>
+          <li>Split bars: a failure counts under its commonest label; the rest, and labels past the {SPLIT_LABELS} commonest, are &ldquo;other&rdquo;.</li>
+          <li>Corrected rate: Rogan&ndash;Gladen, from each model&rsquo;s catch and clear rates on labelled notes. compare.ts --prevalence weights it back to X.</li>
+          <li>Cost is per model, never pooled. &ldquo;est.&rdquo; is {ESTIMATED_COST}.</li>
+        </ul>
+      </details>
     </div>
   );
 }
