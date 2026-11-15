@@ -2,7 +2,8 @@
 standard figures of a classification paper: a confusion matrix for "Taste
 failure?", one for "Needs a community note?", and precision and recall for
 each label with 95% Wilson intervals. Only notes a labeller answered count.
-Both the labellers and the judge may answer Unsure. The scores count the
+Notes the labellers called Somewhat a taste failure are left out. Both the
+labellers and the judge may answer Unsure. The scores count the
 judge's Unsure as right, and say how often the judge used it.
 Run from the repository root:
 
@@ -27,7 +28,9 @@ from dotenv import load_dotenv
 
 Z_95 = 1.96
 ANSWERS = ["No", "Yes", "Unsure"]
-HAND_VERDICT_ANSWER = {"taste_failure": "Yes", "somewhat": "Yes", "fine": "No", "unsure": "Unsure"}
+# A Somewhat verdict is left out of the evaluation: the judge is scored only
+# against clear answers.
+HAND_VERDICT_ANSWER = {"taste_failure": "Yes", "fine": "No", "unsure": "Unsure"}
 JUDGE_RECOMMENDATION_ANSWER = {"taste_failure": "Yes", "fine": "No", "unsure": "Unsure"}
 NEEDS_NOTE_ANSWER = {"yes": "Yes", "no": "No", "unsure": "Unsure"}
 

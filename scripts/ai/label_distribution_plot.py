@@ -1,5 +1,5 @@
 """Which labels the labellers gave to the notes they called taste failures
-(Yes or Somewhat), as a bar chart: one bar per label, plus one for the taste
+(Yes; Somewhat is left out of the evaluation), as a bar chart: one bar per label, plus one for the taste
 failures without any label. A note can have several labels, so the bars add
 up to more than the number of notes. Run from the repository root:
 
@@ -26,7 +26,7 @@ def load(note_ids: list[str] | None) -> tuple[int, list[tuple[str, int]]]:
     load_dotenv()
     taste_failures = """
         select note_id from taste.verdicts
-         where source = 'x' and verdict in ('taste_failure', 'somewhat')
+         where source = 'x' and verdict = 'taste_failure'
            and (%(ids)s::text[] is null or note_id = any(%(ids)s::text[]))
     """
     counts = f"""
