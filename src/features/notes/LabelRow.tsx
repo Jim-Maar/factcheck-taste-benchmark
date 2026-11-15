@@ -6,6 +6,7 @@ import { cn } from "@cn/ui/cn";
 import { DropdownMenu } from "@cn/ui/DropdownMenu";
 import { focusRing } from "@cn/ui/focusRing";
 import { AddIcon, CloseIcon, SpeechBubbleIcon } from "@cn/ui/icons";
+import { labelDefinition } from "@cn/core/labelDefinitions";
 import { useLabelling, useLabels } from "./useLabelling";
 
 /* The row under a note, where commonnotes.net has its actions (NoteMenu in
@@ -14,9 +15,10 @@ import { useLabelling, useLabels } from "./useLabelling";
 const ACTION_ICON_SIZE = "1.15em";
 const TOUCH_TARGET = "[@media(pointer:coarse)]:min-h-10";
 
+/** A label on the note. Its definition shows when the pointer rests on it. */
 function LabelChip({ label, onRemove }: { label: Label; onRemove: () => void }) {
   return (
-    <span className={cn(chipVariants(), "border-line bg-surface-muted pr-0.5 font-medium text-fg-secondary")}>
+    <span title={labelDefinition(label.name) ?? undefined} className={cn(chipVariants(), "border-line bg-surface-muted pr-0.5 font-medium text-fg-secondary")}>
       {label.name}
       <button
         type="button"
@@ -33,7 +35,8 @@ function LabelChip({ label, onRemove }: { label: Label; onRemove: () => void }) 
 
 /** The labels of one note, the Add comment button and the Add label menu. The
  *  menu's search box finds a label by name, and typing a name nobody used yet
- *  offers to create it. `children` come first in the row, such as the Source
+ *  offers to create it, and resting the pointer on a label shows its
+ *  definition. `children` come first in the row, such as the Source
  *  details button. Without `onAddComment` the row has no Add comment button,
  *  because the note's comment is already open. */
 export function LabelRow({ source, noteId, labels, onAddComment, children }: { source: Source; noteId: string; labels: Label[]; onAddComment?: () => void; children?: ReactNode }) {
@@ -67,7 +70,7 @@ export function LabelRow({ source, noteId, labels, onAddComment, children }: { s
             key: "labels",
             multiple: true,
             searchable: true,
-            options: allLabels.map((label) => ({ value: String(label.id), label: label.name, count: label.uses })),
+            options: allLabels.map((label) => ({ value: String(label.id), label: label.name, hint: labelDefinition(label.name) ?? undefined, count: label.uses })),
             selected: [...onNote],
             onChange: choose,
             onCreate: (name) => void createAndAddLabel(noteId, name),

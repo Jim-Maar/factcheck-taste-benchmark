@@ -59,6 +59,7 @@ export function CnNoteCard({ card }: { card: CnNote }) {
       needsNote={card.needsNote}
       accuracy={card.accuracy}
       verdict={card.verdict}
+      labelCount={card.labels.length}
       onNeedsNote={(needsNote) => setNeedsNote(note.id, needsNote)}
       onAccuracy={(accuracy) => setAccuracy(note.id, accuracy)}
       onVerdict={(verdict) => setVerdict(note.id, verdict)}
