@@ -26,6 +26,11 @@ function AiReviewBody({ review }: { review: AiReview }) {
         ))}
       </div>
       <p className="mt-1 text-sm text-fg-secondary whitespace-pre-wrap">{review.reasoning}</p>
+      {review.needsNote && (
+        <p className="mt-2 text-xs text-fg-secondary">
+          <span className="font-semibold">Needs a community note?</span> {review.needsNote === "yes" ? "Yes" : "No"}
+        </p>
+      )}
     </>
   );
 }

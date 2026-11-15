@@ -19,13 +19,14 @@ import { fetchLivePost, indent, liveSource, mediaLines, renderPost, type PostSou
  * shows what is said in it, and every video shows the command that saves
  * frames from it (frames.ts), since its preview image is one moment of it.
  *
- * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine" }.
+ * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine", "needs_note": "yes" | "no" }.
  * Saving again with the same model replaces that model's review of the note;
  * other models' reviews stay. The site shows a saved review at once.
  * scripts/ai/run.ts runs a model over many notes and records what it cost. */
 
 const USAGE = "Usage: bun scripts/ai/review.ts latest <count> | show <note id> | labels | save <note id> <model> < review.json";
 const RECOMMENDATIONS = ["taste_failure", "fine"];
+const NEEDS_NOTE_ANSWERS = ["yes", "no"];
 /** A review sits beside a note of a few hundred characters, and must not take
  *  longer to read than the note. */
 const MAX_EXPLANATION_CHARS = 300;
@@ -79,11 +80,13 @@ async function labelNames(): Promise<string[]> {
 }
 
 async function save(noteId: string, model: string) {
-  const review = JSON.parse(await Bun.stdin.text()) as { explanation?: string; reasoning?: string; labels?: string[]; recommendation?: string };
+  const review = JSON.parse(await Bun.stdin.text()) as { explanation?: string; reasoning?: string; labels?: string[]; recommendation?: string; needs_note?: string };
   const explanation = review.explanation?.trim() ?? "";
   const reasoning = review.reasoning?.trim() ?? "";
-  if (!reasoning || !Array.isArray(review.labels) || !RECOMMENDATIONS.includes(review.recommendation ?? "")) {
-    throw new Error(`The review needs a reasoning, a list of labels (empty when none applies) and a recommendation of ${RECOMMENDATIONS.join(" or ")}`);
+  if (!reasoning || !Array.isArray(review.labels) || !RECOMMENDATIONS.includes(review.recommendation ?? "") || !NEEDS_NOTE_ANSWERS.includes(review.needs_note ?? "")) {
+    throw new Error(
+      `The review needs a reasoning, a list of labels (empty when none applies), a recommendation of ${RECOMMENDATIONS.join(" or ")} and a needs_note of ${NEEDS_NOTE_ANSWERS.join(" or ")}`,
+    );
   }
   if (explanation.length > MAX_EXPLANATION_CHARS || reasoning.length > MAX_REASONING_CHARS) {
     throw new Error(
@@ -99,6 +102,7 @@ async function save(noteId: string, model: string) {
     note_id: noteId,
     explanation,
     recommendation: review.recommendation,
+    needs_note: review.needs_note,
     reasoning,
     labels,
     model,
