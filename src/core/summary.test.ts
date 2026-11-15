@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { commonNotes, judgedNotes, labelAxes, labelCounts, modelAgreement, modelRecall, modelStats, promptVersions, reviewCost, sameProtocol, splits, writerLabelShares, writerStats, withoutTriedModels, LABELLERS, UNRECORDED_PROMPT, type Split, type SummaryData, type SummaryReview } from "./summary";
+import { commonNotes, judgedNotes, labelAxes, labelCounts, modelAgreement, modelRecall, modelStats, promptVersions, reviewCost, sameProtocol, splits, totals, weightedRate, writerLabelShares, writerStats, withoutTriedModels, LABELLERS, UNRECORDED_PROMPT, type Split, type SummaryData, type SummaryReview } from "./summary";
 
 const review = (noteId: string, model: string, recommendation: "taste_failure" | "fine", labels: string[] = [], more: Partial<SummaryReview> = {}): SummaryReview => ({
   noteId, model, recommendation, labels, inputTokens: null, cachedInputTokens: null, outputTokens: null, costUsd: null, harness: "claude-code", promptVersion: null, createdAt: "2026-11-15T00:00:00Z", ...more,
@@ -17,6 +17,7 @@ const data: SummaryData = {
   handLabels: new Map([["a", ["Pedantic"]], ["b", ["Pedantic", "missed-joke"]], ["d", []]]),
   labelNames: ["Pedantic", "missed-joke", "unclear"],
   writers: new Map([["a", { id: "w1", name: "W1" }], ["b", { id: "w1", name: "W1" }], ["c", { id: "w2", name: "W2" }], ["d", { id: "w2", name: "W2" }]]),
+  xStatus: new Map([["a", "not_helpful"], ["b", "not_helpful"], ["c", "helpful"], ["d", "helpful"]]),
 };
 
 describe("summary", () => {
@@ -102,5 +103,17 @@ describe("summary", () => {
     const result = modelAgreement(three, ["m1", "gpt-6-luna", "m3"]);
     expect(result.pairs.map((p) => [p.a, p.b, p.agreement.notes])).toEqual([["m1", "gpt-6-luna", 1], ["m1", "m3", 2], ["gpt-6-luna", "m3", 1]]);
     expect(result.fleissNotes).toBe(1);
+  });
+  test("weights a split rate to X's mix of helpful and not-helpful notes", () => {
+    expect(weightedRate({ helpful: { failures: 1, notes: 10 }, notHelpful: { failures: 5, notes: 10 } })).toBeCloseTo(0.965 * 0.1 + 0.035 * 0.5);
+    expect(weightedRate({ helpful: { failures: 0, notes: 0 }, notHelpful: { failures: 1, notes: 2 } })).toBe(0.5);
+    expect(weightedRate({ helpful: { failures: 0, notes: 0 }, notHelpful: { failures: 0, notes: 0 } })).toBeNull();
+  });
+
+  test("splits taste-failure rates by X's rating", () => {
+    const m1 = modelStats(data).find((m) => m.model === "m1")!;
+    expect(m1.failuresByStatus).toEqual({ helpful: { failures: 1, notes: 1 }, notHelpful: { failures: 1, notes: 2 } });
+    // The labellers: a and b failed (not helpful), d fine (helpful), c unsure left out.
+    expect(totals(data, []).failuresByStatus).toEqual({ helpful: { failures: 0, notes: 1 }, notHelpful: { failures: 2, notes: 2 } });
   });
 });

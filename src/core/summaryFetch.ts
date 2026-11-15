@@ -66,11 +66,13 @@ export async function fetchSummary(): Promise<SummaryData> {
   const verdicts = new Map(verdictRows.map((v) => [v.note_id, v.verdict]));
   const ids = [...new Set([...verdicts.keys(), ...needsNote.keys(), ...reviewRows.map((r) => r.note_id)])];
   const writers = new Map<string, { id: string; name: string }>();
+  const xStatus = new Map<string, string>();
   for (let at = 0; at < ids.length; at += 200) {
-    const { data, error } = await supabase.from("x_notes").select("note_id, x_notewriters(author_id, name)").in("note_id", ids.slice(at, at + 200));
+    const { data, error } = await supabase.from("x_notes").select("note_id, status, x_notewriters(author_id, name)").in("note_id", ids.slice(at, at + 200));
     if (error) throw error;
-    for (const row of data as unknown as { note_id: string; x_notewriters: { author_id: string; name: string } | null }[]) {
+    for (const row of data as unknown as { note_id: string; status: string; x_notewriters: { author_id: string; name: string } | null }[]) {
       if (row.x_notewriters) writers.set(row.note_id, { id: row.x_notewriters.author_id, name: row.x_notewriters.name });
+      xStatus.set(row.note_id, row.status);
     }
   }
   const num = (v: number | string | null) => (v === null ? null : Number(v));
@@ -93,5 +95,6 @@ export async function fetchSummary(): Promise<SummaryData> {
     handLabels,
     labelNames: labelRows.map((l) => l.name),
     writers,
+    xStatus,
   };
 }

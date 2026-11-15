@@ -20,7 +20,7 @@ const readTab = (): Tab => {
 const INTRO: Record<Tab, string> = {
   x: "Community Notes on X by AI notewriters that X rated helpful or not helpful, from X's public data.",
   commonnotes: "Every note on commonnotes.net, with its claim, post and votes.",
-  summary: "What has been judged and reviewed on the Community Notes tab, what the AI reviews cost, and how each model and notewriter does on each label.",
+  summary: "Labels, AI reviews and costs for the Community Notes tab.",
 };
 
 /** Switching tabs starts the new tab from its own remembered filters, so the
