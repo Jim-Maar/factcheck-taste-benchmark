@@ -10,7 +10,8 @@ import { CheckIcon, CloseIcon } from "@cn/ui/icons";
  * is a taste failure, so it takes the red of a Not helpful rating, and No the
  * green of a Helpful one. Somewhat takes the amber of a Somewhat helpful
  * rating, and Unsure stays grey. The accuracy pills use the same colours:
- * Correct green, Partly amber, Wrong red. */
+ * Correct green, Partly amber, Wrong red. Correct, but unconvincing is green
+ * too, because the note is still right, but it has no check mark. */
 const verdictPillVariants = cva(
   cn("inline-flex h-9 items-center justify-center gap-1.5 rounded-control border px-4 text-sm font-semibold transition-colors [@media(pointer:coarse)]:min-h-10 disabled:opacity-60", focusRing),
   {
@@ -46,6 +47,7 @@ const VERDICT_OPTIONS = [
 
 const ACCURACY_OPTIONS = [
   { value: "correct", label: "Correct", meaning: "The note is factually correct", tone: "positive", icon: <CheckIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
+  { value: "unconvincing", label: "Correct, but unconvincing", meaning: "The note is correct but does not convince", tone: "positive", icon: null },
   { value: "partly", label: "Partly", meaning: "The note is partly correct", tone: "caution", icon: null },
   { value: "wrong", label: "Wrong", meaning: "The note is factually wrong", tone: "negative", icon: <CloseIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
   { value: "unsure", label: "Unsure", meaning: "Not sure whether the note is correct", tone: "neutral", icon: null },

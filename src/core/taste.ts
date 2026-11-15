@@ -16,7 +16,7 @@ export const NOTE_PAGE_SIZE = 10;
 export type Verdict = "taste_failure" | "somewhat" | "fine" | "unsure";
 
 /** Whether a note is factually correct, judged apart from its taste. */
-export type Accuracy = "correct" | "partly" | "wrong" | "unsure";
+export type Accuracy = "correct" | "unconvincing" | "partly" | "wrong" | "unsure";
 
 export interface Label {
   id: number;
