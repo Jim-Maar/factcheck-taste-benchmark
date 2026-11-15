@@ -183,6 +183,7 @@ export function XNoteCard({ note }: { note: XNote }) {
       needsNote={note.needsNote}
       accuracy={note.accuracy}
       verdict={note.verdict}
+      labelCount={note.labels.length}
       onNeedsNote={(needsNote) => setNeedsNote(note.noteId, needsNote)}
       onAccuracy={(accuracy) => setAccuracy(note.noteId, accuracy)}
       onVerdict={(verdict) => setVerdict(note.noteId, verdict)}

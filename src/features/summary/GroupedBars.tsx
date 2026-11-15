@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Score } from "@cn/core/summary";
 import { labelText } from "@cn/core/summary";
+import { wilson } from "@cn/core/agreement";
 
 export interface BarSeries {
   id: string;
@@ -10,6 +11,11 @@ export interface BarSeries {
 }
 
 const pct = (s: Score) => (s.share === null ? "no notes" : `${Math.round(s.share * 100)}%`);
+/** The 95% Wilson interval of a score, as "20–90%". */
+const interval = (s: Score) => {
+  const [low, high] = wilson(s.hits, s.of);
+  return `${Math.round(low * 100)}–${Math.round(high * 100)}%`;
+};
 
 /** One row per label, one thin bar per series, as a share from 0 to 100%.
  *  Each bar ends in its value and count, so no number needs the colour to be
@@ -70,7 +76,12 @@ export function GroupedBars({ rows, series, label }: { rows: { label: string; no
                   <span className="flex-1">{s.name}</span>
                   <span className="tabular-nums text-fg">
                     {pct(s.scores[r]!)}
-                    {s.scores[r]!.of > 0 && <span className="text-fg-muted"> ({s.scores[r]!.hits} of {s.scores[r]!.of})</span>}
+                    {s.scores[r]!.of > 0 && (
+                      <span className="text-fg-muted">
+                        {" "}
+                        ({s.scores[r]!.hits} of {s.scores[r]!.of}, 95% CI {interval(s.scores[r]!)})
+                      </span>
+                    )}
                   </span>
                 </p>
               ))}

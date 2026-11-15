@@ -1,11 +1,11 @@
-import { agreement, type Agreement } from "./agreement";
-import { supabase } from "./supabase";
+import { agreement, correctedPrevalence, fleissKappa, type Agreement, type Prevalence } from "./agreement";
 import type { NeedsNote, Verdict } from "./taste";
 
 /* The Summary tab: what has been judged and reviewed on the X tab, what the
  * reviews cost, and how each model and notewriter does on each kind of taste
- * failure. Everything is read from the tables and worked out here, so a new
- * model or label shows up without a migration. */
+ * failure. Everything is worked out here from the rows that
+ * summaryFetch.ts reads, so a new model or label shows up without a
+ * migration. Pure functions, so scripts/ai/compare.ts uses them too. */
 
 /** USD per million tokens, from the providers' list prices. Only for a cost
  *  estimate when a harness reported tokens but no dollars (Codex reports no
@@ -24,6 +24,12 @@ export interface SummaryReview {
   cachedInputTokens: number | null;
   outputTokens: number | null;
   costUsd: number | null;
+  /** The harness that ran the review (run.ts); null for a review made by hand. */
+  harness: string | null;
+  /** The prompt it was made with; null before run.ts recorded it, or when
+   *  the column isn't there yet. */
+  promptVersion: string | null;
+  createdAt: string;
 }
 
 export interface SummaryData {
@@ -38,6 +44,10 @@ export interface SummaryData {
   writers: Map<string, { id: string; name: string }>;
 }
 
+/** What the Summary calls an estimated cost. LIST_PRICES were copied by hand
+ *  and nobody has checked them against a bill. */
+export const ESTIMATED_COST = "est., list price unverified";
+
 /** What a review cost: the dollars its harness reported, else an estimate
  *  from its tokens at list price, else unknown. */
 export function reviewCost(review: SummaryReview): { usd: number; estimated: boolean } | null {
@@ -48,6 +58,38 @@ export function reviewCost(review: SummaryReview): { usd: number; estimated: boo
   return { usd: ((review.inputTokens - cached) * price.input + cached * price.cachedInput + review.outputTokens * price.output) / 1e6, estimated: true };
 }
 
+/** The choice of prompt for a review made before run.ts recorded one. */
+export const UNRECORDED_PROMPT = "unrecorded";
+
+export interface PromptChoice {
+  id: string;
+  reviews: number;
+  /** When its newest review was made. */
+  latest: string;
+}
+
+/** The prompts the run.ts reviews were made with, newest first, so the
+ *  default is the prompt of the newest review. */
+export function promptVersions(data: SummaryData): PromptChoice[] {
+  const byPrompt = Map.groupBy(
+    data.reviews.filter((r) => r.harness !== null),
+    (r) => r.promptVersion ?? UNRECORDED_PROMPT,
+  );
+  return [...byPrompt]
+    .map(([id, rs]) => ({ id, reviews: rs.length, latest: rs.reduce((m, r) => (r.createdAt > m ? r.createdAt : m), "") }))
+    .sort((a, b) => b.latest.localeCompare(a.latest));
+}
+
+/** The data with only the reviews made the same way: by run.ts (a harness
+ *  is set), and with `prompt` when one is given. A review made by hand, or
+ *  with other instructions, would mix two experiments in one number. */
+export function sameProtocol(data: SummaryData, prompt: string | null): SummaryData {
+  return {
+    ...data,
+    reviews: data.reviews.filter((r) => r.harness !== null && (prompt === null || (r.promptVersion ?? UNRECORDED_PROMPT) === prompt)),
+  };
+}
+
 export interface ModelStats {
   model: string;
   reviews: number;
@@ -55,12 +97,17 @@ export interface ModelStats {
   /** How its calls agree with the labellers', on the notes they called a
    *  taste failure or fine. */
   vsLabellers: Agreement;
-  /** Reviews whose cost is known or estimated, and their total. */
+  /** Reviews whose cost is known or estimated, and their total. A model's
+   *  cost is only ever shown on its own: one model's is billed, another's is
+   *  worked out from list prices. */
   costed: number;
   costUsd: number;
   estimated: boolean;
   avgInputTokens: number | null;
   avgOutputTokens: number | null;
+  /** Its taste-failure rate on every note it reviewed, corrected for the
+   *  failures it misses and the false alarms it gives on the labelled notes. */
+  prevalence: Prevalence;
 }
 
 export function modelStats(data: SummaryData): ModelStats[] {
@@ -74,39 +121,74 @@ export function modelStats(data: SummaryData): ModelStats[] {
       const costs = reviews.map(reviewCost).filter((c) => c !== null);
       const metered = reviews.filter((r) => r.inputTokens !== null && r.outputTokens !== null);
       const avg = (pick: (r: SummaryReview) => number) => (metered.length ? Math.round(metered.reduce((s, r) => s + pick(r), 0) / metered.length) : null);
+      const tasteFailures = reviews.filter((r) => r.recommendation === "taste_failure").length;
+      const vs = agreement(comparable.map((r) => ({ truth: data.verdicts.get(r.noteId) === "taste_failure", call: r.recommendation === "taste_failure" })));
       return {
         model,
         reviews: reviews.length,
-        tasteFailures: reviews.filter((r) => r.recommendation === "taste_failure").length,
-        vsLabellers: agreement(comparable.map((r) => ({ truth: data.verdicts.get(r.noteId) === "taste_failure", call: r.recommendation === "taste_failure" }))),
+        tasteFailures,
+        vsLabellers: vs,
         costed: costs.length,
         costUsd: costs.reduce((s, c) => s + c.usd, 0),
         estimated: costs.some((c) => c.estimated),
         avgInputTokens: avg((r) => r.inputTokens!),
         avgOutputTokens: avg((r) => r.outputTokens!),
+        prevalence: correctedPrevalence([{ weight: 1, positives: tasteFailures, notes: reviews.length }], ...sensitivityAndSpecificity(vs)),
       };
     })
     .sort((a, b) => b.reviews - a.reviews || a.model.localeCompare(b.model));
 }
 
+/** A judge's sensitivity (failures caught of failures) and specificity (fine
+ *  notes cleared of fine notes) against the labellers. */
+export function sensitivityAndSpecificity(a: Agreement): [{ hits: number; of: number }, { hits: number; of: number }] {
+  return [
+    { hits: a.caught, of: a.caught + a.missed },
+    { hits: a.cleared, of: a.cleared + a.falseAlarms },
+  ];
+}
+
+export interface ModelAgreement {
+  pairs: { a: string; b: string; agreement: Agreement }[];
+  /** Fleiss' kappa of all the models together, on the notes all reviewed. */
+  fleiss: number | null;
+  fleissNotes: number;
+}
+
+/** How the models agree with each other: Cohen's kappa of each pair on the
+ *  notes both reviewed, and Fleiss' kappa of all of them. */
+export function modelAgreement(data: SummaryData, models: string[]): ModelAgreement {
+  const call = new Map(data.reviews.map((r) => [`${r.model} ${r.noteId}`, r.recommendation === "taste_failure"]));
+  const notes = [...new Set(data.reviews.map((r) => r.noteId))];
+  const pairs = models.flatMap((a, i) =>
+    models.slice(i + 1).map((b) => ({
+      a,
+      b,
+      agreement: agreement(notes.filter((id) => call.has(`${a} ${id}`) && call.has(`${b} ${id}`)).map((id) => ({ truth: call.get(`${a} ${id}`)!, call: call.get(`${b} ${id}`)! }))),
+    })),
+  );
+  const rows = notes.filter((id) => models.every((m) => call.has(`${m} ${id}`))).map((id) => models.map((m) => call.get(`${m} ${id}`)!));
+  return { pairs, fleiss: models.length > 2 ? fleissKappa(rows) : null, fleissNotes: rows.length };
+}
+
 export interface Totals {
   judged: number;
   tasteFailures: number;
+  /** Judged notes that weren't unsure: the taste-failure rate's denominator. */
+  decided: number;
   labelled: number;
   reviews: number;
   models: number;
   reviewedNotes: number;
   /** The labellers' answers to whether the post needed a note. */
   needsNote: Record<NeedsNote, number>;
-  costed: number;
-  costUsd: number;
-  estimated: boolean;
 }
 
 export function totals(data: SummaryData, models: ModelStats[]): Totals {
   return {
     judged: data.verdicts.size,
     tasteFailures: [...data.verdicts.values()].filter((v) => v === "taste_failure").length,
+    decided: [...data.verdicts.values()].filter((v) => v !== "unsure").length,
     labelled: [...data.handLabels.values()].filter((l) => l.length).length,
     reviews: data.reviews.length,
     models: models.length,
@@ -116,9 +198,6 @@ export function totals(data: SummaryData, models: ModelStats[]): Totals {
       no: [...data.needsNote.values()].filter((a) => a === "no").length,
       unsure: [...data.needsNote.values()].filter((a) => a === "unsure").length,
     },
-    costed: models.reduce((s, m) => s + m.costed, 0),
-    costUsd: models.reduce((s, m) => s + m.costUsd, 0),
-    estimated: models.some((m) => m.estimated),
   };
 }
 
@@ -155,18 +234,35 @@ export function modelRecall(data: SummaryData, model: string, axes: string[]): S
 /** The judge that stands for the labellers, beside the models. */
 export const LABELLERS = "labellers";
 
-/** The notes a judge judged, with the labels it gave each: the labellers'
- *  verdicts and hand labels, or a model's reviews. */
+/** The notes a judge has fully labelled, with the labels it gave each. For
+ *  the labellers, a note called fine, or a taste failure with at least one
+ *  label: an unsure or somewhat note, or a failure not labelled yet, would
+ *  count against every label when a model labels every failure it calls.
+ *  For a model, every note it reviewed. */
 export function judgedNotes(data: SummaryData, judge: string): Map<string, string[]> {
-  if (judge === LABELLERS) return new Map([...data.verdicts.keys()].map((id) => [id, data.handLabels.get(id) ?? []]));
+  if (judge === LABELLERS) {
+    return new Map(
+      [...data.verdicts]
+        .filter(([id, v]) => v === "fine" || (v === "taste_failure" && (data.handLabels.get(id)?.length ?? 0) > 0))
+        .map(([id, v]) => [id, v === "fine" ? [] : data.handLabels.get(id)!]),
+    );
+  }
   return new Map(data.reviews.filter((r) => r.model === judge).map((r) => [r.noteId, r.labels]));
 }
 
+/** The notes every one of the judges has judged (see judgedNotes), so their
+ *  label shares are out of the same notes. */
+export function commonNotes(data: SummaryData, judges: string[]): Set<string> {
+  const [first, ...rest] = judges.map((j) => judgedNotes(data, j));
+  if (!first) return new Set();
+  return new Set([...first.keys()].filter((id) => rest.every((m) => m.has(id))));
+}
+
 /** How often a notewriter's notes get each label from a judge: of its notes
- *  the judge judged, the share given the label. A null writer is every
- *  notewriter together. */
-export function writerLabelShares(data: SummaryData, judge: string, writerId: string | null, labels: string[]): Score[] {
-  const notes = [...judgedNotes(data, judge)].filter(([id]) => writerId === null || data.writers.get(id)?.id === writerId);
+ *  the judge judged (and in `only`, when given), the share given the label.
+ *  A null writer is every notewriter together. */
+export function writerLabelShares(data: SummaryData, judge: string, writerId: string | null, labels: string[], only?: Set<string>): Score[] {
+  const notes = [...judgedNotes(data, judge)].filter(([id]) => (!only || only.has(id)) && (writerId === null || data.writers.get(id)?.id === writerId));
   return labels.map((label) => score(notes.filter(([, ls]) => ls.some((l) => sameLabel(l, label))).length, notes.length));
 }
 
@@ -181,6 +277,8 @@ export interface WriterStats {
   name: string;
   judged: number;
   tasteFailures: number;
+  /** Judged notes that weren't unsure, which the failure rate is out of. */
+  decided: number;
   /** Notes whose post a labeller said whether it needed a note, and how many
    *  of those it didn't. */
   askedNeed: number;
@@ -192,7 +290,7 @@ export function writerStats(data: SummaryData): WriterStats[] {
   const of = (noteId: string) => {
     const writer = data.writers.get(noteId);
     if (!writer) return null;
-    const stats = byWriter.get(writer.id) ?? { ...writer, judged: 0, tasteFailures: 0, askedNeed: 0, notNeeded: 0 };
+    const stats = byWriter.get(writer.id) ?? { ...writer, judged: 0, tasteFailures: 0, decided: 0, askedNeed: 0, notNeeded: 0 };
     byWriter.set(writer.id, stats);
     return stats;
   };
@@ -200,6 +298,7 @@ export function writerStats(data: SummaryData): WriterStats[] {
     const stats = of(noteId);
     if (!stats) continue;
     stats.judged++;
+    if (verdict !== "unsure") stats.decided++;
     if (verdict === "taste_failure") stats.tasteFailures++;
   }
   for (const [noteId, answer] of data.needsNote) {
@@ -211,33 +310,40 @@ export function writerStats(data: SummaryData): WriterStats[] {
   return [...byWriter.values()].sort((a, b) => b.judged - a.judged || a.name.localeCompare(b.name));
 }
 
-/** Every row of a table, a thousand at a time; with `xOnly`, only the X tab's. */
 export interface LabelCounts {
   /** Every label anyone gave, most given first. */
   labels: string[];
-  /** How many notes the labellers gave each label to. */
+  /** How many notes the labellers gave each label to, of how many. */
   hand: number[];
-  /** How many notes each model gave each label to, by model. */
-  byModel: { model: string; counts: number[] }[];
+  handNotes: number;
+  /** How many notes each model gave each label to, of how many, by model. */
+  byModel: { model: string; counts: number[]; notes: number }[];
 }
 
-/** How many notes each judge gave each label to. A note with two labels
+/** How many notes each judge gave each label to, of the notes it judged
+ *  (see judgedNotes) and in `only`, when given. A note with two labels
  *  counts once under each. A model's own spelling of a label is matched
  *  ignoring case; a label no one else uses gets a column of its own. */
-export function labelCounts(data: SummaryData, models: string[]): LabelCounts {
+export function labelCounts(data: SummaryData, models: string[], only?: Set<string>): LabelCounts {
   const names = new Map<string, string>();
   for (const name of data.labelNames) names.set(name.toLowerCase(), name);
   for (const r of data.reviews) for (const l of r.labels) if (!names.has(l.toLowerCase())) names.set(l.toLowerCase(), l);
   const keys = [...names.keys()];
   const count = (labelLists: string[][]) => keys.map((k) => labelLists.filter((ls) => ls.some((l) => l.toLowerCase() === k)).length);
-  const hand = count([...data.verdicts.keys()].map((id) => data.handLabels.get(id) ?? []));
-  const byModel = models.map((model) => ({ model, counts: count(data.reviews.filter((r) => r.model === model).map((r) => r.labels)) }));
+  const judged = (judge: string) => [...judgedNotes(data, judge)].filter(([id]) => !only || only.has(id)).map(([, ls]) => ls);
+  const handLists = judged(LABELLERS);
+  const hand = count(handLists);
+  const byModel = models.map((model) => {
+    const lists = judged(model);
+    return { model, counts: count(lists), notes: lists.length };
+  });
   const total = (i: number) => hand[i]! + byModel.reduce((s, m) => s + m.counts[i]!, 0);
   const order = keys.map((_, i) => i).filter((i) => total(i) > 0).sort((a, b) => total(b) - total(a) || keys[a]!.localeCompare(keys[b]!));
   return {
     labels: order.map((i) => names.get(keys[i]!)!),
     hand: order.map((i) => hand[i]!),
-    byModel: byModel.map((m) => ({ model: m.model, counts: order.map((i) => m.counts[i]!) })),
+    handNotes: handLists.length,
+    byModel: byModel.map((m) => ({ model: m.model, counts: order.map((i) => m.counts[i]!), notes: m.notes })),
   };
 }
 
@@ -278,17 +384,6 @@ export function splits(data: SummaryData, axes: string[], models: string[]): Spl
   ];
 }
 
-async function all<T>(table: string, columns: string, xOnly = false): Promise<T[]> {
-  const rows: T[] = [];
-  for (let from = 0; ; from += 1000) {
-    const query = supabase.from(table).select(columns);
-    const { data, error } = await (xOnly ? query.eq("source", "x") : query).range(from, from + 999);
-    if (error) throw error;
-    rows.push(...(data as unknown as T[]));
-    if (data.length < 1000) return rows;
-  }
-}
-
 /** The fewest reviews a model needs to be shown; one or two reviews, such
  *  as a model tried once, would only add noise to the charts. */
 export const MIN_REVIEWS = 5;
@@ -298,50 +393,4 @@ export function withoutTriedModels(data: SummaryData): SummaryData {
   const counts = new Map<string, number>();
   for (const r of data.reviews) counts.set(r.model, (counts.get(r.model) ?? 0) + 1);
   return { ...data, reviews: data.reviews.filter((r) => counts.get(r.model)! >= MIN_REVIEWS) };
-}
-
-export async function fetchSummary(): Promise<SummaryData> {
-  const [reviewRows, verdictRows, labelRows, noteLabelRows, needsNoteRows] = await Promise.all([
-    all<{ note_id: string; model: string; recommendation: "taste_failure" | "fine"; labels: string[]; input_tokens: number | null; cached_input_tokens: number | null; output_tokens: number | null; cost_usd: number | string | null }>(
-      "ai_reviews", "note_id, model, recommendation, labels, input_tokens, cached_input_tokens, output_tokens, cost_usd", true),
-    all<{ note_id: string; verdict: Verdict }>("verdicts", "note_id, verdict", true),
-    all<{ id: number; name: string }>("labels", "id, name"),
-    all<{ note_id: string; label_id: number }>("note_labels", "note_id, label_id", true),
-    all<{ note_id: string; answer: NeedsNote }>("needs_note", "note_id, answer", true),
-  ]);
-  const needsNote = new Map(needsNoteRows.map((n) => [n.note_id, n.answer]));
-  const labelName = new Map(labelRows.map((l) => [l.id, l.name]));
-  const handLabels = new Map<string, string[]>();
-  for (const row of noteLabelRows) {
-    const name = labelName.get(row.label_id);
-    if (name) handLabels.set(row.note_id, [...(handLabels.get(row.note_id) ?? []), name]);
-  }
-  const verdicts = new Map(verdictRows.map((v) => [v.note_id, v.verdict]));
-  const ids = [...new Set([...verdicts.keys(), ...needsNote.keys(), ...reviewRows.map((r) => r.note_id)])];
-  const writers = new Map<string, { id: string; name: string }>();
-  for (let at = 0; at < ids.length; at += 200) {
-    const { data, error } = await supabase.from("x_notes").select("note_id, x_notewriters(author_id, name)").in("note_id", ids.slice(at, at + 200));
-    if (error) throw error;
-    for (const row of data as unknown as { note_id: string; x_notewriters: { author_id: string; name: string } | null }[]) {
-      if (row.x_notewriters) writers.set(row.note_id, { id: row.x_notewriters.author_id, name: row.x_notewriters.name });
-    }
-  }
-  const num = (v: number | string | null) => (v === null ? null : Number(v));
-  return {
-    reviews: reviewRows.map((r) => ({
-      noteId: r.note_id,
-      model: r.model,
-      recommendation: r.recommendation,
-      labels: r.labels ?? [],
-      inputTokens: num(r.input_tokens),
-      cachedInputTokens: num(r.cached_input_tokens),
-      outputTokens: num(r.output_tokens),
-      costUsd: num(r.cost_usd),
-    })),
-    verdicts,
-    needsNote,
-    handLabels,
-    labelNames: labelRows.map((l) => l.name),
-    writers,
-  };
 }

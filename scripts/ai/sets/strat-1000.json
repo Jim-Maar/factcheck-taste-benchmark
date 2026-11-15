@@ -1,0 +1,264 @@
+{
+  "name": "strat-1000",
+  "drawnAt": "2026-11-15T15:45:24.990Z",
+  "params": {
+    "notes": 1000,
+    "notHelpfulShare": 0.5,
+    "maxWriterShare": 0.1,
+    "capPerStratum": {
+      "helpful": 50,
+      "not_helpful": 50
+    },
+    "includeOurs": false,
+    "seed": 1,
+    "byShuffle": false,
+    "first": null,
+    "from": null,
+    "unjudged": false
+  },
+  "population": {
+    "notes": 32996,
+    "strata": {
+      "helpful": {
+        "notes": 31832,
+        "share": 0.964722996726876,
+        "writers": {
+          "321BEBF06B9C14296569E1A26D2EB521A2B16AB2039AB99CDF8716BB34DD293D": {
+            "name": "AI notewriter 321BEB",
+            "notes": 1146
+          },
+          "3DB2C88F21A0C5421B373B4CAAC2C507807F2D85C8914D0565E67AF1746267FE": {
+            "name": "AI notewriter 3DB2C8",
+            "notes": 5017
+          },
+          "46EF8576BF25A86B7598BFAE356644B18135BCC7308B212898953FEAC6B52915": {
+            "name": "AI notewriter 46EF85",
+            "notes": 223
+          },
+          "6531ED68CF7D53C23CF83E4B2E603B2C43BCC598761681808DA9F918A4944D53": {
+            "name": "AI notewriter 6531ED",
+            "notes": 277
+          },
+          "9A4E061C2417E456C7C339EC956EBC52E6BA5E040B8600C359C10694DE31FD62": {
+            "name": "AI notewriter 9A4E06",
+            "notes": 288
+          },
+          "A09F8A9954C81C4CAEC1CD55598C5D11B1B5D8AB72D1F0A851EC626C0B6E1866": {
+            "name": "AI notewriter A09F8A",
+            "notes": 157
+          },
+          "A0A7C54DAD6E5E83B3862F3B499C5019EBA29A8A5142765275BCCC5BDEC32215": {
+            "name": "AI notewriter A0A7C5",
+            "notes": 4740
+          },
+          "A9CD635B3039333BE6A70CDA85EAFE27FA13CFCF9031819B797887C80BFA3366": {
+            "name": "AI notewriter A9CD63",
+            "notes": 5158
+          },
+          "B3E2C89FD19296525A8117746AFB6E96AEF503E4EB9B1C1DF5E112D2E2D0BE3C": {
+            "name": "AI notewriter B3E2C8",
+            "notes": 4816
+          },
+          "C08CB9803C7181D902730BDEE2B78F0F3B70C21F6865CF58160ACBAB6E2FC3D2": {
+            "name": "AI notewriter C08CB9",
+            "notes": 379
+          },
+          "D6D5E740F63DC34D81BD735B2AFCB39D253A6AC476710B31032419C2E47BD85B": {
+            "name": "AI notewriter D6D5E7",
+            "notes": 4642
+          },
+          "EA7F9E359B3A3B1E77C081AD29A21858EB57BEABA8860D5F27A19CED9AF234B3": {
+            "name": "AI notewriter EA7F9E",
+            "notes": 224
+          },
+          "F14ECB41C233875132EBFAC0D72206681017FDA097BDE992E887E10E2EB398A7": {
+            "name": "AI notewriter F14ECB",
+            "notes": 4765
+          }
+        }
+      },
+      "not_helpful": {
+        "notes": 1164,
+        "share": 0.03527700327312402,
+        "writers": {
+          "321BEBF06B9C14296569E1A26D2EB521A2B16AB2039AB99CDF8716BB34DD293D": {
+            "name": "AI notewriter 321BEB",
+            "notes": 91
+          },
+          "3DB2C88F21A0C5421B373B4CAAC2C507807F2D85C8914D0565E67AF1746267FE": {
+            "name": "AI notewriter 3DB2C8",
+            "notes": 102
+          },
+          "46EF8576BF25A86B7598BFAE356644B18135BCC7308B212898953FEAC6B52915": {
+            "name": "AI notewriter 46EF85",
+            "notes": 68
+          },
+          "6531ED68CF7D53C23CF83E4B2E603B2C43BCC598761681808DA9F918A4944D53": {
+            "name": "AI notewriter 6531ED",
+            "notes": 79
+          },
+          "9A4E061C2417E456C7C339EC956EBC52E6BA5E040B8600C359C10694DE31FD62": {
+            "name": "AI notewriter 9A4E06",
+            "notes": 88
+          },
+          "A09F8A9954C81C4CAEC1CD55598C5D11B1B5D8AB72D1F0A851EC626C0B6E1866": {
+            "name": "AI notewriter A09F8A",
+            "notes": 18
+          },
+          "A0A7C54DAD6E5E83B3862F3B499C5019EBA29A8A5142765275BCCC5BDEC32215": {
+            "name": "AI notewriter A0A7C5",
+            "notes": 107
+          },
+          "A9CD635B3039333BE6A70CDA85EAFE27FA13CFCF9031819B797887C80BFA3366": {
+            "name": "AI notewriter A9CD63",
+            "notes": 117
+          },
+          "B3E2C89FD19296525A8117746AFB6E96AEF503E4EB9B1C1DF5E112D2E2D0BE3C": {
+            "name": "AI notewriter B3E2C8",
+            "notes": 140
+          },
+          "C08CB9803C7181D902730BDEE2B78F0F3B70C21F6865CF58160ACBAB6E2FC3D2": {
+            "name": "AI notewriter C08CB9",
+            "notes": 73
+          },
+          "D6D5E740F63DC34D81BD735B2AFCB39D253A6AC476710B31032419C2E47BD85B": {
+            "name": "AI notewriter D6D5E7",
+            "notes": 114
+          },
+          "EA7F9E359B3A3B1E77C081AD29A21858EB57BEABA8860D5F27A19CED9AF234B3": {
+            "name": "AI notewriter EA7F9E",
+            "notes": 58
+          },
+          "F14ECB41C233875132EBFAC0D72206681017FDA097BDE992E887E10E2EB398A7": {
+            "name": "AI notewriter F14ECB",
+            "notes": 109
+          }
+        }
+      }
+    }
+  },
+  "pool": {
+    "notes": 32996
+  },
+  "sample": {
+    "notes": 1000,
+    "strata": {
+      "helpful": {
+        "notes": 500,
+        "share": 0.5,
+        "writers": {
+          "321BEBF06B9C14296569E1A26D2EB521A2B16AB2039AB99CDF8716BB34DD293D": {
+            "name": "AI notewriter 321BEB",
+            "notes": 50
+          },
+          "3DB2C88F21A0C5421B373B4CAAC2C507807F2D85C8914D0565E67AF1746267FE": {
+            "name": "AI notewriter 3DB2C8",
+            "notes": 50
+          },
+          "46EF8576BF25A86B7598BFAE356644B18135BCC7308B212898953FEAC6B52915": {
+            "name": "AI notewriter 46EF85",
+            "notes": 16
+          },
+          "6531ED68CF7D53C23CF83E4B2E603B2C43BCC598761681808DA9F918A4944D53": {
+            "name": "AI notewriter 6531ED",
+            "notes": 24
+          },
+          "9A4E061C2417E456C7C339EC956EBC52E6BA5E040B8600C359C10694DE31FD62": {
+            "name": "AI notewriter 9A4E06",
+            "notes": 37
+          },
+          "A09F8A9954C81C4CAEC1CD55598C5D11B1B5D8AB72D1F0A851EC626C0B6E1866": {
+            "name": "AI notewriter A09F8A",
+            "notes": 19
+          },
+          "A0A7C54DAD6E5E83B3862F3B499C5019EBA29A8A5142765275BCCC5BDEC32215": {
+            "name": "AI notewriter A0A7C5",
+            "notes": 50
+          },
+          "A9CD635B3039333BE6A70CDA85EAFE27FA13CFCF9031819B797887C80BFA3366": {
+            "name": "AI notewriter A9CD63",
+            "notes": 50
+          },
+          "B3E2C89FD19296525A8117746AFB6E96AEF503E4EB9B1C1DF5E112D2E2D0BE3C": {
+            "name": "AI notewriter B3E2C8",
+            "notes": 50
+          },
+          "C08CB9803C7181D902730BDEE2B78F0F3B70C21F6865CF58160ACBAB6E2FC3D2": {
+            "name": "AI notewriter C08CB9",
+            "notes": 34
+          },
+          "D6D5E740F63DC34D81BD735B2AFCB39D253A6AC476710B31032419C2E47BD85B": {
+            "name": "AI notewriter D6D5E7",
+            "notes": 50
+          },
+          "EA7F9E359B3A3B1E77C081AD29A21858EB57BEABA8860D5F27A19CED9AF234B3": {
+            "name": "AI notewriter EA7F9E",
+            "notes": 20
+          },
+          "F14ECB41C233875132EBFAC0D72206681017FDA097BDE992E887E10E2EB398A7": {
+            "name": "AI notewriter F14ECB",
+            "notes": 50
+          }
+        }
+      },
+      "not_helpful": {
+        "notes": 500,
+        "share": 0.5,
+        "writers": {
+          "321BEBF06B9C14296569E1A26D2EB521A2B16AB2039AB99CDF8716BB34DD293D": {
+            "name": "AI notewriter 321BEB",
+            "notes": 43
+          },
+          "3DB2C88F21A0C5421B373B4CAAC2C507807F2D85C8914D0565E67AF1746267FE": {
+            "name": "AI notewriter 3DB2C8",
+            "notes": 43
+          },
+          "46EF8576BF25A86B7598BFAE356644B18135BCC7308B212898953FEAC6B52915": {
+            "name": "AI notewriter 46EF85",
+            "notes": 26
+          },
+          "6531ED68CF7D53C23CF83E4B2E603B2C43BCC598761681808DA9F918A4944D53": {
+            "name": "AI notewriter 6531ED",
+            "notes": 39
+          },
+          "9A4E061C2417E456C7C339EC956EBC52E6BA5E040B8600C359C10694DE31FD62": {
+            "name": "AI notewriter 9A4E06",
+            "notes": 42
+          },
+          "A09F8A9954C81C4CAEC1CD55598C5D11B1B5D8AB72D1F0A851EC626C0B6E1866": {
+            "name": "AI notewriter A09F8A",
+            "notes": 7
+          },
+          "A0A7C54DAD6E5E83B3862F3B499C5019EBA29A8A5142765275BCCC5BDEC32215": {
+            "name": "AI notewriter A0A7C5",
+            "notes": 43
+          },
+          "A9CD635B3039333BE6A70CDA85EAFE27FA13CFCF9031819B797887C80BFA3366": {
+            "name": "AI notewriter A9CD63",
+            "notes": 49
+          },
+          "B3E2C89FD19296525A8117746AFB6E96AEF503E4EB9B1C1DF5E112D2E2D0BE3C": {
+            "name": "AI notewriter B3E2C8",
+            "notes": 50
+          },
+          "C08CB9803C7181D902730BDEE2B78F0F3B70C21F6865CF58160ACBAB6E2FC3D2": {
+            "name": "AI notewriter C08CB9",
+            "notes": 37
+          },
+          "D6D5E740F63DC34D81BD735B2AFCB39D253A6AC476710B31032419C2E47BD85B": {
+            "name": "AI notewriter D6D5E7",
+            "notes": 46
+          },
+          "EA7F9E359B3A3B1E77C081AD29A21858EB57BEABA8860D5F27A19CED9AF234B3": {
+            "name": "AI notewriter EA7F9E",
+            "notes": 26
+          },
+          "F14ECB41C233875132EBFAC0D72206681017FDA097BDE992E887E10E2EB398A7": {
+            "name": "AI notewriter F14ECB",
+            "notes": 49
+          }
+        }
+      }
+    }
+  }
+}
