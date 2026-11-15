@@ -22,7 +22,7 @@ import { liveSource, type PostSource } from "./thread";
  * frames from it (frames.ts), since its preview image is one moment of it.
  * run.ts saves those frames for its sessions instead.
  *
- * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine" | "unsure", "needs_note": "yes" | "no" | "unsure" }.
+ * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine", "needs_note": "yes" | "no" }.
  * Saving again with the same model replaces that model's review of the note;
  * other models' reviews stay. The site shows a saved review at once.
  * scripts/ai/run.ts runs a model over many notes and records what it cost. */

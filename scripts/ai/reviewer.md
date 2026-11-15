@@ -60,5 +60,5 @@ The post says a new law bans gas stoves in every home in the state from next yea
 - `explanation`: one or two sentences, at most 300 characters. Only the context a labeller can't get from the post and the note themselves. Don't retell the post or the note, and don't judge here. Leave it empty when the post explains itself.
 - `reasoning`: one or two sentences, at most 300 characters, on why the note is or is not a taste failure.
 - `labels`: every label that applies, by its name above. Empty when the note is fine, or when it fails in a way no label covers (say how in the reasoning).
-- `recommendation`: `taste_failure`, `fine` or `unsure`. Answer `unsure` when you can't tell, and say why in the reasoning.
-- `needs_note`: `yes`, `no` or `unsure`. Do you think a community note is needed on this post? Answer for the post, not for this note: whether any note would help its readers.
+- `recommendation`: `taste_failure` or `fine`. When you are torn, pick the likelier one and say so in the reasoning.
+- `needs_note`: `yes` or `no`. Do you think a community note is needed on this post? Answer for the post, not for this note: whether any note would help its readers.
