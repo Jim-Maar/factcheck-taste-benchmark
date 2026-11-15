@@ -18,7 +18,10 @@ import { dirname, join } from "node:path";
  * sources, hooks off, its built-in plugins off, no MCP servers, no slash
  * commands, and only Read, Write, WebSearch and WebFetch: the files tools
  * allowed in the folder only, WebFetch refused for X and Community Notes
- * sites. With no login in its config folder it needs ANTHROPIC_API_KEY.
+ * sites. Its config folder holds no login, so it signs in with
+ * CLAUDE_CODE_OAUTH_TOKEN (a subscription token from `claude setup-token`)
+ * or, failing that, ANTHROPIC_API_KEY (billed to the API). Only one is
+ * passed, so it is clear which account pays.
  *
  * Codex runs without the user's config.toml or rules, without AGENTS.md or
  * skills, ephemeral, in the folder, with live web search, and with a
@@ -154,8 +157,13 @@ function sessionEnv(o: RunOptions): Record<string, string> {
   const root = join(o.session.workDir, "..");
   const env: Record<string, string> = { PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: join(root, "home"), LANG: process.env.LANG ?? "C.UTF-8", TMPDIR: join(root, "tmp") };
   if (o.harness === "claude") {
-    if (!process.env.ANTHROPIC_API_KEY) throw new Error("Set ANTHROPIC_API_KEY: Claude sessions run with an empty config folder, which holds no login.");
-    Object.assign(env, { ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY, CLAUDE_CONFIG_DIR: join(root, "config"), DISABLE_AUTOUPDATER: "1", CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1" });
+    const login = process.env.CLAUDE_CODE_OAUTH_TOKEN
+      ? { CLAUDE_CODE_OAUTH_TOKEN: process.env.CLAUDE_CODE_OAUTH_TOKEN }
+      : process.env.ANTHROPIC_API_KEY
+        ? { ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY }
+        : null;
+    if (!login) throw new Error("Set CLAUDE_CODE_OAUTH_TOKEN (run `claude setup-token`) or ANTHROPIC_API_KEY: Claude sessions run with an empty config folder, which holds no login.");
+    Object.assign(env, login, { CLAUDE_CONFIG_DIR: join(root, "config"), DISABLE_AUTOUPDATER: "1", CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1" });
   } else {
     env.CODEX_HOME = process.env.CODEX_HOME ?? join(homedir(), ".codex");
   }
