@@ -1,3 +1,4 @@
+import { appendFile } from "node:fs/promises";
 import { target } from "../import/db";
 
 /* Runs a model over a set of X notes, one fresh harness session per note, so
@@ -10,10 +11,19 @@ import { target } from "../import/db";
  *   bun scripts/ai/run.ts <codex|claude> <model> <note id>...        these notes
  *   bun scripts/ai/run.ts <codex|claude> <model> --like <other model> the notes another model reviewed
  *   bun scripts/ai/run.ts <codex|claude> <model> --latest <count>     the newest notes on posts still on X
+ *   bun scripts/ai/run.ts <codex|claude> <model> --set <name>         the notes of scripts/ai/sets/<name>.txt
  *
  * With --like and --latest, notes the model has already reviewed are left
- * out; name a note's id to review it again. --parallel <n> runs n sessions at
- * once (default 2).
+ * out; name a note's id to review it again. With --set, the notes the model
+ * has already reviewed with the current prompt are left out, so a stopped run
+ * picks up where it stopped. --parallel <n> runs n sessions at once
+ * (default 2).
+ *
+ * Every model gets the same prompt: the reviewer's files (PROMPT_FILES) as
+ * last committed. The run refuses to start while they have uncommitted
+ * changes, and records on each review the commit it ran with
+ * (prompt_version, migration 18). A review being replaced is first appended
+ * to scripts/ai/sets/superseded.jsonl, so no review is lost.
  *
  * Tokens are counted as OpenAI counts them: input includes the cached input.
  * Claude Code reports its own cost in dollars. Codex reports only tokens, so
@@ -21,7 +31,7 @@ import { target } from "../import/db";
  * without prices there (or when Codex runs on a ChatGPT plan, which isn't
  * billed per token: leave its prices out). */
 
-const USAGE = "Usage: bun scripts/ai/run.ts <codex|claude> <model> (<note id>... | --like <model> | --latest <count>) [--parallel <n>]";
+const USAGE = "Usage: bun scripts/ai/run.ts <codex|claude> <model> (<note id>... | --like <model> | --latest <count> | --set <name>) [--parallel <n>]";
 const HARNESSES = ["codex", "claude"] as const;
 type Harness = (typeof HARNESSES)[number];
 
@@ -42,6 +52,33 @@ interface Outcome {
 
 /** USD per million tokens. */
 type Prices = Record<string, { input?: number | null; cached_input?: number | null; output?: number | null }>;
+
+/** What decides how a note is reviewed: the instructions and the tools that
+ *  show a note to the reviewer. */
+const PROMPT_FILES = ["scripts/ai/reviewer.md", "scripts/ai/review.ts", "scripts/ai/thread.ts", "scripts/ai/frames.ts", "src/core/xVideo.ts"];
+const SUPERSEDED = "scripts/ai/sets/superseded.jsonl";
+
+/** The commit that last changed PROMPT_FILES, or an error if they have
+ *  changes not yet committed, which no other run could repeat. */
+async function promptVersion(): Promise<string> {
+  const git = async (...args: string[]) => {
+    const proc = Bun.spawn(["git", ...args], { stdout: "pipe", stderr: "pipe" });
+    const out = await new Response(proc.stdout).text();
+    if ((await proc.exited) !== 0) throw new Error(`git ${args.join(" ")} failed`);
+    return out.trim();
+  };
+  const dirty = await git("status", "--porcelain", "--", ...PROMPT_FILES);
+  if (dirty) throw new Error(`Commit the reviewer's files first, so every model gets the same prompt:\n${dirty}`);
+  return git("log", "-1", "--format=%h", "--", ...PROMPT_FILES);
+}
+
+/** Appends a model's current review of a note, if it has one, to SUPERSEDED,
+ *  before a new session replaces it. */
+async function keepOldReview(model: string, noteId: string) {
+  const { data, error } = await target.from("ai_reviews").select("*").match({ source: "x", note_id: noteId, model }).maybeSingle();
+  if (error) throw error;
+  if (data) await appendFile(SUPERSEDED, `${JSON.stringify({ ...data, superseded_at: new Date().toISOString() })}\n`);
+}
 
 const prompt = (noteId: string, model: string) =>
   `Read scripts/ai/reviewer.md: it is your instructions. Review only the X note ${noteId}, and save the review with the model id ${model}.`;
@@ -97,7 +134,8 @@ async function runClaude(model: string, noteId: string): Promise<Usage> {
   };
 }
 
-async function reviewNote(harness: Harness, model: string, noteId: string, prices: Prices): Promise<Outcome> {
+async function reviewNote(harness: Harness, model: string, noteId: string, prices: Prices, version: string): Promise<Outcome> {
+  await keepOldReview(model, noteId);
   const started = new Date();
   let usage: Usage;
   try {
@@ -107,7 +145,7 @@ async function reviewNote(harness: Harness, model: string, noteId: string, price
   }
   const { data, error } = await target
     .from("ai_reviews")
-    .update({ harness, input_tokens: usage.inputTokens, cached_input_tokens: usage.cachedInputTokens, output_tokens: usage.outputTokens, cost_usd: usage.costUsd })
+    .update({ harness, prompt_version: version, input_tokens: usage.inputTokens, cached_input_tokens: usage.cachedInputTokens, output_tokens: usage.outputTokens, cost_usd: usage.costUsd })
     .match({ source: "x", note_id: noteId, model })
     .gte("created_at", started.toISOString())
     .select("note_id");
@@ -116,8 +154,12 @@ async function reviewNote(harness: Harness, model: string, noteId: string, price
   return { noteId, usage };
 }
 
-async function reviewedBy(model: string): Promise<Set<string>> {
-  const { data, error } = await target.from("ai_reviews").select("note_id").eq("source", "x").eq("model", model);
+/** The notes the model has reviewed, or with a version, only those it
+ *  reviewed with that prompt. */
+async function reviewedBy(model: string, version?: string): Promise<Set<string>> {
+  let query = target.from("ai_reviews").select("note_id").eq("source", "x").eq("model", model);
+  if (version) query = query.eq("prompt_version", version);
+  const { data, error } = await query;
   if (error) throw error;
   return new Set(data.map((row) => row.note_id as string));
 }
@@ -152,22 +194,32 @@ async function main() {
   const parallel = Number(option("--parallel") ?? 2);
   const like = option("--like");
   const latest = option("--latest");
+  const set = option("--set");
   const [harness, model, ...ids] = args;
-  if (!HARNESSES.includes(harness as Harness) || !model || (!ids.length && !like && !latest)) throw new Error(USAGE);
+  if (!HARNESSES.includes(harness as Harness) || !model || (!ids.length && !like && !latest && !set)) throw new Error(USAGE);
+  const version = await promptVersion();
   // Without ffmpeg a session can't see more of a video than its preview image (frames.ts), and its reviews would differ from another machine's.
   if (!Bun.which("ffmpeg") || !Bun.which("ffprobe")) throw new Error("Install ffmpeg first: the reviewer needs it to look at the videos of posts.");
 
   const done = await reviewedBy(model);
-  const noteIds = like ? [...(await reviewedBy(like))].filter((id) => !done.has(id)) : latest ? await latestNotes(Number(latest), done) : ids;
+  const doneNow = await reviewedBy(model, version);
+  const setIds = set ? (await Bun.file(`scripts/ai/sets/${set}.txt`).text()).split(/\s+/).filter(Boolean) : [];
+  const noteIds = set
+    ? setIds.filter((id) => !doneNow.has(id))
+    : like
+      ? [...(await reviewedBy(like))].filter((id) => !done.has(id))
+      : latest
+        ? await latestNotes(Number(latest), done)
+        : ids;
   if (!noteIds.length) return console.log("No notes to review.");
   const prices = (await Bun.file(new URL("prices.json", import.meta.url)).json()) as Prices;
-  console.log(`Reviewing ${noteIds.length} notes with ${model} on ${harness}, ${parallel} at a time.`);
+  console.log(`Reviewing ${noteIds.length} notes with ${model} on ${harness}, prompt ${version}, ${parallel} at a time.`);
 
   const outcomes: Outcome[] = [];
   let next = 0;
   const worker = async () => {
     while (next < noteIds.length) {
-      const outcome = await reviewNote(harness as Harness, model, noteIds[next++]!, prices);
+      const outcome = await reviewNote(harness as Harness, model, noteIds[next++]!, prices, version);
       outcomes.push(outcome);
       const u = outcome.usage;
       const used = u ? `${u.inputTokens} in (${u.cachedInputTokens} cached), ${u.outputTokens} out, ${u.costUsd === null ? "cost unknown" : `$${u.costUsd.toFixed(4)}`}` : "";

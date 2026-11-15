@@ -1,3 +1,4 @@
+import { agreement, type Agreement } from "../../src/core/agreement";
 import { target } from "../import/db";
 
 /* Compares the models that reviewed X notes: how often each calls a note a
@@ -6,6 +7,11 @@ import { target } from "../import/db";
  *
  *   bun scripts/ai/compare.ts                 every model
  *   bun scripts/ai/compare.ts <model>...      these models, on the notes all of them reviewed
+ *   --prompt <version>                        only reviews made with that prompt (prompt_version, see run.ts)
+ *
+ * Agreement with the labellers is on the notes they called a taste failure
+ * or fine, as Cohen's kappa with a 95% bootstrap interval, beside the
+ * agreement that always giving their commoner answer would get.
  */
 
 interface Review {
@@ -29,8 +35,14 @@ async function all<T>(table: string, columns: string, filter: (q: any) => any = 
 
 const pct = (part: number, whole: number) => (whole ? `${Math.round((100 * part) / whole)}%` : "-");
 
-const picked = process.argv.slice(2);
-let reviews = await all<Review>("ai_reviews", "note_id, model, recommendation, cost_usd, input_tokens, output_tokens", (q) => q.eq("source", "x"));
+const args = process.argv.slice(2);
+const promptAt = args.indexOf("--prompt");
+const promptVersion = promptAt === -1 ? undefined : args.splice(promptAt, 2)[1];
+const picked = args;
+let reviews = await all<Review>("ai_reviews", "note_id, model, recommendation, cost_usd, input_tokens, output_tokens", (q) =>
+  promptVersion ? q.eq("source", "x").eq("prompt_version", promptVersion) : q.eq("source", "x"),
+);
+if (promptVersion) console.log(`Only reviews made with prompt ${promptVersion}.\n`);
 if (picked.length) {
   const unknown = picked.filter((model) => !reviews.some((r) => r.model === model));
   if (unknown.length) throw new Error(`No reviews by ${unknown.join(", ")}`);
@@ -46,11 +58,14 @@ const verdicts = new Map(
 const models = [...new Set(reviews.map((r) => r.model))].sort();
 const recommendation = new Map(reviews.map((r) => [`${r.model} ${r.note_id}`, r.recommendation]));
 
-console.log("model | notes | taste failure | agrees with labellers | cost known | total cost | cost per review | tokens in/out per review");
+const kappaText = (a: Agreement) =>
+  a.kappa === null ? "-" : `κ ${a.kappa.toFixed(2)}${a.kappaCi ? ` (${a.kappaCi[0].toFixed(2)} to ${a.kappaCi[1].toFixed(2)})` : ""}`;
+const binary = (verdict: string | undefined) => verdict === "taste_failure" || verdict === "fine";
+
+console.log("model | notes | taste failure | vs labellers | cost known | total cost | cost per review | tokens in/out per review");
 for (const model of models) {
   const mine = reviews.filter((r) => r.model === model);
-  const judged = mine.filter((r) => verdicts.has(r.note_id));
-  const agree = judged.filter((r) => verdicts.get(r.note_id) === r.recommendation).length;
+  const vs = agreement(mine.filter((r) => binary(verdicts.get(r.note_id))).map((r) => ({ truth: verdicts.get(r.note_id) === "taste_failure", call: r.recommendation === "taste_failure" })));
   const costed = mine.filter((r) => r.cost_usd !== null);
   const total = costed.reduce((sum, r) => sum + Number(r.cost_usd), 0);
   const metered = mine.filter((r) => r.input_tokens !== null);
@@ -60,7 +75,9 @@ for (const model of models) {
       model,
       mine.length,
       pct(mine.filter((r) => r.recommendation === "taste_failure").length, mine.length),
-      judged.length ? `${pct(agree, judged.length)} of ${judged.length}` : "no labelled notes",
+      vs.notes
+        ? `${kappaText(vs)}, ${pct(vs.caught + vs.cleared, vs.notes)} agree (baseline ${pct(Math.round(vs.baseline * vs.notes), vs.notes)}), caught ${vs.caught} of ${vs.caught + vs.missed} failures, on ${vs.notes}`
+        : "no labelled notes",
       `${costed.length}`,
       costed.length ? `$${total.toFixed(2)}` : "-",
       costed.length ? `$${(total / costed.length).toFixed(4)}` : "-",
@@ -70,12 +87,13 @@ for (const model of models) {
 }
 
 if (models.length > 1) {
-  console.log("\nmodel pair | notes both reviewed | agree");
+  console.log("\nmodel pair | notes both reviewed | agree | kappa");
   for (const [i, a] of models.entries()) {
     for (const b of models.slice(i + 1)) {
       const both = reviews.filter((r) => r.model === a && recommendation.has(`${b} ${r.note_id}`));
       const agree = both.filter((r) => recommendation.get(`${b} ${r.note_id}`) === r.recommendation).length;
-      console.log(`${a} vs ${b} | ${both.length} | ${pct(agree, both.length)}`);
+      const pair = agreement(both.map((r) => ({ truth: recommendation.get(`${b} ${r.note_id}`) === "taste_failure", call: r.recommendation === "taste_failure" })));
+      console.log(`${a} vs ${b} | ${both.length} | ${pct(agree, both.length)} | ${kappaText(pair)}`);
     }
   }
 }

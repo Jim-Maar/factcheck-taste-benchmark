@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { Agreement } from "@cn/core/agreement";
 import {
   fetchSummary,
   judgedNotes,
@@ -7,6 +8,7 @@ import {
   labelCounts,
   LABELLERS,
   labelText,
+  MIN_REVIEWS,
   modelRecall,
   modelStats,
   SPLIT_LABELS,
@@ -14,6 +16,7 @@ import {
   totals,
   writerLabelShares,
   writerStats,
+  withoutTriedModels,
   type Score,
   type SummaryData,
 } from "@cn/core/summary";
@@ -32,6 +35,9 @@ const SLOT_COLORS = ["var(--cn-compare-1)", "var(--cn-compare-2)", "var(--cn-com
 const pct = (part: number, whole: number) => (whole ? `${Math.round((100 * part) / whole)}%` : "–");
 const usd = (n: number) => (n === 0 ? "$0" : n < 0.01 ? `$${n.toFixed(4)}` : `$${n.toFixed(2)}`);
 const tokens = (n: number | null) => (n === null ? "–" : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
+const ci = ([low, high]: [number, number]) => `${Math.round(low * 100)}–${Math.round(high * 100)}%`;
+const kappaText = (a: Agreement) =>
+  a.kappa === null ? "–" : `${a.kappa.toFixed(2)}${a.kappaCi ? ` (${a.kappaCi[0].toFixed(2)} to ${a.kappaCi[1].toFixed(2)})` : ""}`;
 const shareText = (s: Score) => (s.share === null ? "–" : `${Math.round(s.share * 100)}% (${s.hits}/${s.of})`);
 
 function Stat({ label, value, detail }: { label: string; value: ReactNode; detail?: ReactNode }) {
@@ -353,16 +359,21 @@ function Summary({ data }: { data: SummaryData }) {
       <section className="space-y-3">
         <SectionTitle>AI reviewers</SectionTitle>
         <p className="text-sm text-fg-secondary">
-          Agreement counts only notes a labeller called a taste failure or fine. A cost marked est. is worked out from the tokens at the provider&rsquo;s list price, because
+          Models with fewer than {MIN_REVIEWS} reviews are left out. The model is compared with the labellers only on notes they called a taste failure or fine. κ
+          (Cohen&rsquo;s kappa) is agreement beyond chance: 0 is no better than guessing, 1 is perfect. The baseline is how often always giving the labellers&rsquo; commoner
+          answer would agree. Intervals are 95%. A cost marked est. is worked out from the tokens at the provider&rsquo;s list price, because
           the harness reported no dollars.
         </p>
         <Table
-          head={["Model", "Reviews", "Taste failure", "Agrees with labellers", "Cost", "Per review", "Tokens in / out"]}
+          head={["Model", "Reviews", "Taste failure", "κ with labellers", "Agreement", "Baseline", "Failures caught", "Cost", "Per review", "Tokens in / out"]}
           rows={models.map((m) => [
             m.model,
             m.reviews,
             pct(m.tasteFailures, m.reviews),
-            m.comparable ? `${pct(m.agreed, m.comparable)} of ${m.comparable}` : "–",
+            kappaText(m.vsLabellers),
+            m.vsLabellers.notes ? `${pct(Math.round(m.vsLabellers.agreement * m.vsLabellers.notes), m.vsLabellers.notes)} (${ci(m.vsLabellers.agreementCi)}) of ${m.vsLabellers.notes}` : "–",
+            m.vsLabellers.notes ? percent(m.vsLabellers.baseline) : "–",
+            m.vsLabellers.caught + m.vsLabellers.missed ? `${m.vsLabellers.caught} of ${m.vsLabellers.caught + m.vsLabellers.missed}` : "–",
             m.costed ? `${usd(m.costUsd)}${m.estimated ? " est." : ""}${m.costed < m.reviews ? ` (${m.costed} of ${m.reviews})` : ""}` : "unknown",
             m.costed ? usd(m.costUsd / m.costed) : "–",
             `${tokens(m.avgInputTokens)} / ${tokens(m.avgOutputTokens)}`,
@@ -382,5 +393,5 @@ export function SummaryTab() {
   const query = useQuery({ queryKey: queryKeys.tasteSummary, queryFn: fetchSummary });
   if (query.isError) return <LoadFailed what="The summary" onRetry={() => void query.refetch()} />;
   if (!query.data) return <p className="text-sm text-fg-muted">Loading…</p>;
-  return <Summary data={query.data} />;
+  return <Summary data={withoutTriedModels(query.data)} />;
 }

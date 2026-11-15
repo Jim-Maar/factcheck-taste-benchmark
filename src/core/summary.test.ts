@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { labelAxes, labelCounts, modelRecall, modelStats, reviewCost, splits, writerLabelShares, writerStats, LABELLERS, type Split, type SummaryData, type SummaryReview } from "./summary";
+import { labelAxes, labelCounts, modelRecall, modelStats, reviewCost, splits, writerLabelShares, writerStats, withoutTriedModels, LABELLERS, type Split, type SummaryData, type SummaryReview } from "./summary";
 
 const review = (noteId: string, model: string, recommendation: "taste_failure" | "fine", labels: string[] = [], more: Partial<SummaryReview> = {}): SummaryReview => ({
   noteId, model, recommendation, labels, inputTokens: null, cachedInputTokens: null, outputTokens: null, costUsd: null, ...more,
@@ -30,7 +30,7 @@ describe("summary", () => {
 
   test("counts agreement only on notes judged taste failure or fine", () => {
     const m1 = modelStats(data).find((m) => m.model === "m1")!;
-    expect([m1.reviews, m1.tasteFailures, m1.comparable, m1.agreed]).toEqual([3, 2, 2, 1]);
+    expect([m1.reviews, m1.tasteFailures, m1.vsLabellers.notes, m1.vsLabellers.caught, m1.vsLabellers.missed]).toEqual([3, 2, 2, 1, 1]);
     expect([m1.costed, m1.costUsd, m1.estimated]).toEqual([1, 0.5, false]);
   });
 
@@ -56,6 +56,11 @@ describe("summary", () => {
     expect(counts.labels).toEqual(["Pedantic", "missed-joke", "made-up"]);
     expect(counts.hand).toEqual([2, 1, 0]);
     expect(counts.byModel).toEqual([{ model: "m1", counts: [2, 1, 1] }, { model: "gpt-6-luna", counts: [0, 0, 0] }]);
+  });
+
+  test("leaves out models with fewer than five reviews", () => {
+    const many = Array.from({ length: 5 }, (_, i) => review(`n${i}`, "big", "fine"));
+    expect(withoutTriedModels({ ...data, reviews: [...data.reviews, ...many] }).reviews.map((r) => r.model)).toEqual(Array(5).fill("big"));
   });
 
   test("scores notewriters on their judged notes", () => {

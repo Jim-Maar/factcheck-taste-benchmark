@@ -1,3 +1,4 @@
+import { agreement, type Agreement } from "./agreement";
 import { supabase } from "./supabase";
 import type { NeedsNote, Verdict } from "./taste";
 
@@ -51,10 +52,9 @@ export interface ModelStats {
   model: string;
   reviews: number;
   tasteFailures: number;
-  /** Reviews of notes a labeller called a taste failure or fine, and how many
-   *  of those the model agreed with. */
-  comparable: number;
-  agreed: number;
+  /** How its calls agree with the labellers', on the notes they called a
+   *  taste failure or fine. */
+  vsLabellers: Agreement;
   /** Reviews whose cost is known or estimated, and their total. */
   costed: number;
   costUsd: number;
@@ -78,8 +78,7 @@ export function modelStats(data: SummaryData): ModelStats[] {
         model,
         reviews: reviews.length,
         tasteFailures: reviews.filter((r) => r.recommendation === "taste_failure").length,
-        comparable: comparable.length,
-        agreed: comparable.filter((r) => data.verdicts.get(r.noteId) === r.recommendation).length,
+        vsLabellers: agreement(comparable.map((r) => ({ truth: data.verdicts.get(r.noteId) === "taste_failure", call: r.recommendation === "taste_failure" }))),
         costed: costs.length,
         costUsd: costs.reduce((s, c) => s + c.usd, 0),
         estimated: costs.some((c) => c.estimated),
@@ -288,6 +287,17 @@ async function all<T>(table: string, columns: string, xOnly = false): Promise<T[
     rows.push(...(data as unknown as T[]));
     if (data.length < 1000) return rows;
   }
+}
+
+/** The fewest reviews a model needs to be shown; one or two reviews, such
+ *  as a model tried once, would only add noise to the charts. */
+export const MIN_REVIEWS = 5;
+
+/** The data without the reviews of models below MIN_REVIEWS. */
+export function withoutTriedModels(data: SummaryData): SummaryData {
+  const counts = new Map<string, number>();
+  for (const r of data.reviews) counts.set(r.model, (counts.get(r.model) ?? 0) + 1);
+  return { ...data, reviews: data.reviews.filter((r) => counts.get(r.model)! >= MIN_REVIEWS) };
 }
 
 export async function fetchSummary(): Promise<SummaryData> {

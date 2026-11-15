@@ -116,8 +116,15 @@ function OtherNotes({ notes }: { notes: XNote["otherNotes"] }) {
 
 /** One AI notewriter's note on X: the post in its box, then the note under
  *  a Community Note heading with its status, writer, the writer's answers and
- *  X's ratings. Adapted from commonnotes.net's X notewriter page. */
+ *  X's ratings. Adapted from commonnotes.net's X notewriter page.
+ *
+ *  What X made of the note (its status, the ratings and their reasons, the
+ *  other notes on the post, and the link to the note on X, which shows them
+ *  all) stays hidden until the note has a verdict, so the labeller judges
+ *  the note as the AI reviewer does, on its own. A button shows it sooner. */
 function XNoteBody({ note }: { note: XNote }) {
+  const [shown, setShown] = useState(false);
+  const revealed = shown || note.verdict !== null;
   const written = new Date(note.written).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return (
     <Card className="mx-auto w-full max-w-[40rem] p-4 lg:mx-0 lg:max-w-none">
@@ -125,13 +132,17 @@ function XNoteBody({ note }: { note: XNote }) {
       <section aria-label="Community Note" className="mt-4">
         <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3">
           <h3 className={eyebrowVariants()}>Community Note</h3>
-          <a href={communityNoteUrl(note.noteId)} target="_blank" rel="noreferrer" className="shrink-0 text-xs text-link hover:underline">
-            View on X ↗
-          </a>
+          {revealed && (
+            <a href={communityNoteUrl(note.noteId)} target="_blank" rel="noreferrer" className="shrink-0 text-xs text-link hover:underline">
+              View on X ↗
+            </a>
+          )}
         </div>
-        <div className="mb-2">
-          <StatusBadge status={note.status} />
-        </div>
+        {revealed && (
+          <div className="mb-2">
+            <StatusBadge status={note.status} />
+          </div>
+        )}
         <LinkifiedText className="text-sm text-fg whitespace-pre-wrap [overflow-wrap:anywhere]" linkClassName="text-link hover:underline break-all" text={note.noteText} />
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <span className="mr-1 text-xs text-fg-muted" title={`Author id ${note.notewriter.id}`}>
@@ -139,10 +150,21 @@ function XNoteBody({ note }: { note: XNote }) {
           </span>
           <WriterAnswers answers={note.writerAnswers} />
         </div>
-        <div className="mt-3">
-          <XRatings ratings={note.ratings} />
-        </div>
-        <OtherNotes notes={note.otherNotes} />
+        {revealed ? (
+          <>
+            <div className="mt-3">
+              <XRatings ratings={note.ratings} />
+            </div>
+            <OtherNotes notes={note.otherNotes} />
+          </>
+        ) : (
+          <p className="mt-3 text-xs text-fg-muted">
+            How X rated this note is hidden until you give a verdict, so it can&rsquo;t sway you.{" "}
+            <button type="button" onClick={() => setShown(true)} className="text-link hover:underline">
+              Show it now
+            </button>
+          </p>
+        )}
       </section>
     </Card>
   );
