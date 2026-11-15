@@ -116,7 +116,11 @@ function claudeCommand(o: RunOptions): string[] {
     "--settings", JSON.stringify({ disableAllHooks: true, enabledPlugins: Object.fromEntries(BUILTIN_PLUGINS.map((name) => [name, false])) }),
     "--disable-slash-commands",
     "--tools", "Read,Write,WebSearch,WebFetch",
-    "--permission-mode", "dontAsk",
+    // acceptEdits, not dontAsk: dontAsk refuses Write even when an allow rule
+    // covers the file. acceptEdits allows writes in the session folder, and in
+    // print mode any request outside the rules (such as a read outside the
+    // folder) is refused, since no one is there to approve it.
+    "--permission-mode", "acceptEdits",
     "--allowedTools", "Read(./**)", "Write(./**)", "WebSearch", "WebFetch",
     "--disallowedTools", ...BLOCKED_DOMAINS.map((domain) => `WebFetch(domain:${domain})`),
   ];
@@ -297,7 +301,10 @@ const FORBIDDEN_PATTERNS: [string, RegExp][] = [
   ["X itself", /https?:\/\/(?:www\.|mobile\.)?(?:x|twitter)\.com\b/i],
   ["a .env file", /\.env\b/],
   ["the database", /supabase/i],
-  ["this repository", /factcheck-taste|taste-runs|superseded|\.claude|\.codex|CLAUDE\.md|AGENTS\.md/i],
+  // Only paths in the user's home folder or the repo: Codex looks for
+  // AGENTS.md, .codex and the like in its own empty folder out of habit, and
+  // finds nothing there. A real leak shows up as one of these paths.
+  ["this repository", /factcheck-taste|taste-runs|superseded|(~|\/home\/[^/\s"']+)\/\.(claude|codex)/i],
 ];
 
 /** The forbidden lookups among a session's actions, and searches that quote

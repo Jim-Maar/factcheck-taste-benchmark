@@ -122,9 +122,11 @@ try {
   const age = search.date ? (Date.parse(today) - Date.parse(search.date)) / 86_400_000 : NaN;
   const page = search.url?.startsWith("http") ? await fetch(search.url, { signal: AbortSignal.timeout(30_000), redirect: "follow" }).then((r) => r.status, () => 0) : 0;
   result(
-    searched.length > 0 && age >= -1 && age <= FRESH_DAYS && page > 0 && page < 500,
+    // A site that doesn't answer our own fetch (some block scripts) doesn't
+    // fail the check; an address that is missing (4xx) does, as a made-up URL.
+    searched.length > 0 && age >= -1 && age <= FRESH_DAYS && !(page >= 400 && page < 500),
     "web-search",
-    `${searched.length} web search calls; article: ${search.title ?? "(none)"} ${search.url ?? ""} dated ${search.date ?? "(none)"} (${Number.isNaN(age) ? "no date" : `${Math.round(age)} days old`}, URL answers HTTP ${page || "nothing"})` +
+    `${searched.length} web search calls; article: ${search.title ?? "(none)"} ${search.url ?? ""} dated ${search.date ?? "(none)"} (${Number.isNaN(age) ? "no date" : `${Math.round(age)} days old`}, URL answers HTTP ${page || "nothing; not counted against it"})` +
       (searched[0] ? `\nfirst search: ${searched[0].slice(0, 200)}` : ""),
   );
 
