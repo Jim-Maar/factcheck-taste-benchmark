@@ -1,5 +1,5 @@
 import { largestMp4, videoId } from "../../src/core/xVideo";
-import { displayText, SYNDICATION_URL, syndicationToken, toXMedia, type SyndicationTweet, type XMedia } from "../import/xPosts";
+import { displayText, fetchSyndicatedTweet, RateLimited, SYNDICATION_URL, syndicationToken, toXMedia, type SyndicationTweet, type XMedia } from "../import/xPosts";
 
 /* A post as a reader of it meets it on X: the thread above it, oldest first,
  * and what it quotes, and what that quotes, indented under it. Posts come
@@ -17,6 +17,28 @@ export interface PostSource {
   /** What is said in a video, "" when it has no speech, or null when it has
    *  no transcript. Left out where transcripts aren't at hand. */
   transcript?(videoId: string): Promise<string | null>;
+  /** What the reviewer is told about seeing more of a video than its preview
+   *  image, given its largest file. Without it, the frames.ts command. */
+  videoFrames?(file: string): Promise<string[]>;
+}
+
+/** X's embed endpoint failed for a reason that may pass (an error, a rate
+ *  limit), so a post's context can't be shown in full right now. */
+export class EmbedUnavailable extends Error {}
+
+/** One post from X's embed endpoint, or null when X says it is gone. Any
+ *  other failure throws EmbedUnavailable, so a reviewer is never shown less
+ *  of a post's context than another reviewer was. scripts/ai/run.ts uses
+ *  this. */
+export async function fetchLivePostStrict(tweetId: string): Promise<SyndicationTweet | null> {
+  let tweet: Awaited<ReturnType<typeof fetchSyndicatedTweet>>;
+  try {
+    tweet = await fetchSyndicatedTweet(tweetId);
+  } catch (error) {
+    throw new EmbedUnavailable(`X's embed endpoint ${error instanceof RateLimited ? "rate-limited us" : `failed: ${(error as Error).message}`} (post ${tweetId})`);
+  }
+  if (tweet === null) throw new EmbedUnavailable(`X's embed endpoint failed for post ${tweetId}`);
+  return tweet === "gone" ? null : tweet;
 }
 
 /** One post from X's embed endpoint, or null when it is gone or the fetch failed. */
@@ -46,7 +68,8 @@ export async function mediaLines(source: PostSource, media: XMedia[]): Promise<s
     lines.push(`  ${item.type}: ${source.mediaLocation(item.url ?? item.preview_image_url ?? "(no url)")}`);
     const id = videoId(item);
     const file = id && largestMp4(item);
-    if (file) lines.push(...indent([`That is its preview image. For frames from the rest of the video: bun scripts/ai/frames.ts ${file}`]));
+    if (file && source.videoFrames) lines.push(...indent(await source.videoFrames(file)));
+    else if (file) lines.push(...indent([`That is its preview image. For frames from the rest of the video: bun scripts/ai/frames.ts ${file}`]));
     const transcript = id && source.transcript ? await source.transcript(id) : null;
     if (transcript !== null) lines.push(...indent([transcript ? `What is said in the video: ${transcript}` : "The video has no speech."]));
   }

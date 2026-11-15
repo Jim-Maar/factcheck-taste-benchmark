@@ -14,7 +14,11 @@ import { videoId } from "../../src/core/xVideo";
  *
  * The reviewer chooses nothing else. The video's length sets how many frames
  * there are, and a closer look covers the stretch one frame of the whole
- * video stands for, so the two together leave no gap. */
+ * video stands for, so the two together leave no gap.
+ *
+ * scripts/ai/run.ts doesn't let a session run this: it saves the frames
+ * across each video itself (extractFrames), into the session's folder, and
+ * lists them in the prompt. */
 
 const USAGE = "Usage: bun scripts/ai/frames.ts <video address> [time in the video, as 1:42]";
 /** Only X's own video files, so the tool can't be pointed at anything else. */
@@ -38,17 +42,22 @@ const FRAMES_DIR = join(tmpdir(), "x-video-frames");
 /** ffmpeg says this when X no longer serves the file, for example because the post is deleted. */
 const GONE_FILE_PATTERN = /HTTP error 40[34]|40[34] (Forbidden|Not Found)/;
 
+/** X no longer serves the video's file. */
+export class VideoGone extends Error {}
+
+export const hasFfmpeg = () => Boolean(Bun.which("ffmpeg") && Bun.which("ffprobe"));
+
 async function run(command: string[]): Promise<string> {
   const proc = Bun.spawn(command, { stdin: "ignore", stdout: "pipe", stderr: "pipe" });
   const [out, err] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
   if ((await proc.exited) === 0) return out;
-  if (GONE_FILE_PATTERN.test(err)) throw new Error("X no longer serves this video.");
+  if (GONE_FILE_PATTERN.test(err)) throw new VideoGone("X no longer serves this video.");
   throw new Error(`${command[0]} failed: ${err.trim()}`);
 }
 
 /** Deletes the frames of videos that no run has touched for an hour. */
 async function deleteOldFrames() {
-  for (const name of await readdir(FRAMES_DIR)) {
+  for (const name of await readdir(FRAMES_DIR).catch(() => [] as string[])) {
     const dir = join(FRAMES_DIR, name);
     // Another session may delete the same folder at the same moment.
     const modified = await stat(dir).then((s) => s.mtimeMs, () => null);
@@ -72,7 +81,18 @@ function secondsOf(time: string): number | null {
 /** `count` times at even steps between two times, each in the middle of its step. */
 const spread = (from: number, to: number, count: number) => Array.from({ length: count }, (_, i) => from + ((to - from) * (i + 0.5)) / count);
 
-async function frames(url: string, at: number | null) {
+export interface Frames {
+  duration: number;
+  from: number;
+  to: number;
+  /** The time one frame across the whole video stands for. */
+  step: number;
+  saved: { time: number; path: string }[];
+}
+
+/** Saves frames of the video into dir: across the whole video, or, with a
+ *  time, around that moment. */
+export async function extractFrames(url: string, at: number | null, dir: string): Promise<Frames> {
   const duration = Number(await run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", url]));
   if (!(duration > 0)) throw new Error("Couldn't read the video's length.");
   if (at !== null && at >= duration) throw new Error(`The video is only ${clock(Math.floor(duration))} long.`);
@@ -88,9 +108,7 @@ async function frames(url: string, at: number | null) {
       ? spread(0, duration, across).map(Math.floor)
       : spread(from, to, Math.max(1, Math.min(MAX_FRAMES, Math.floor((to - from) / CLOSEST_FRAMES_SECONDS)))).map((time) => Math.round(time * 10) / 10);
 
-  const dir = join(FRAMES_DIR, videoId({ type: "video", variants: [{ url, content_type: "video/mp4" }] }) ?? Bun.hash(url).toString(16));
   await mkdir(dir, { recursive: true });
-  await deleteOldFrames();
   const scale = `scale='if(gt(iw,ih),min(${MAX_FRAME_SIDE},iw),-2)':'if(gt(iw,ih),-2,min(${MAX_FRAME_SIDE},ih))'`;
   const saved: { time: number; path: string }[] = [];
   let next = 0;
@@ -106,7 +124,15 @@ async function frames(url: string, at: number | null) {
   await Promise.all(Array.from({ length: PARALLEL_FRAMES }, worker));
   if (!saved.length) throw new Error("The video has no picture there.");
   saved.sort((a, b) => a.time - b.time);
+  return { duration, from, to, step, saved };
+}
 
+export { clock };
+
+async function frames(url: string, at: number | null) {
+  const dir = join(FRAMES_DIR, videoId({ type: "video", variants: [{ url, content_type: "video/mp4" }] }) ?? Bun.hash(url).toString(16));
+  await deleteOldFrames();
+  const { duration, from, to, step, saved } = await extractFrames(url, at, dir);
   const length = clock(Math.floor(duration));
   const where = at === null ? `across a ${length} video` : `from ${clock(Math.floor(from))} to ${clock(Math.ceil(to))} of a ${length} video`;
   console.log(`${saved.length} frames ${where}, each with its time in the video:`);
@@ -116,10 +142,12 @@ async function frames(url: string, at: number | null) {
   }
 }
 
-const [url, time, ...rest] = process.argv.slice(2);
-const at = time === undefined ? null : secondsOf(time);
-if (!url?.startsWith(VIDEO_HOST) || rest.length || (time !== undefined && at === null)) throw new Error(USAGE);
-if (!Bun.which("ffmpeg") || !Bun.which("ffprobe")) {
-  throw new Error("ffmpeg isn't installed on this machine, so the video's frames can't be saved. Judge the video from its preview image, and say in the reasoning that you saw only that.");
+if (import.meta.main) {
+  const [url, time, ...rest] = process.argv.slice(2);
+  const at = time === undefined ? null : secondsOf(time);
+  if (!url?.startsWith(VIDEO_HOST) || rest.length || (time !== undefined && at === null)) throw new Error(USAGE);
+  if (!hasFfmpeg()) {
+    throw new Error("ffmpeg isn't installed on this machine, so the video's frames can't be saved. Judge the video from its preview image, and say in the reasoning that you saw only that.");
+  }
+  await frames(url, at);
 }
-await frames(url, at);
