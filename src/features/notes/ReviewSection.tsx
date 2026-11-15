@@ -8,7 +8,7 @@ import { AccuracyPills, NeedsNotePills, VerdictPills } from "./VerdictPills";
  *  note at all, the accuracy, the taste verdict and, in `children`, the labels. It sits at the bottom of a card
  *  with p-4 and runs out to its edges. */
 /** sm:pt-2 centres the question's first line on a 36px pill. */
-const QUESTION_CLASS = "text-sm font-semibold text-fg sm:max-w-[9rem] sm:pt-2";
+const QUESTION_CLASS = "text-sm font-semibold text-fg sm:max-w-[10.5rem] sm:pt-2";
 
 export function ReviewSection({ needsNote, accuracy, verdict, onNeedsNote, onAccuracy, onVerdict, children }: {
   needsNote: NeedsNote | null;
