@@ -40,8 +40,10 @@ cap() { systemd-run --user --scope -q -p MemoryMax=1500M -p MemorySwapMax=0 "$@"
 cap bun scripts/import/index.ts commonnotes                 # about 20 seconds
 cap bun scripts/import/index.ts x <dump folder> <YYYY-MM-DD> # about 15 minutes, peaks near 500 MB
 cap bun scripts/import/index.ts posts                       # about 20 minutes for 24,000 posts
+cap bun scripts/import/index.ts transcripts <count>         # costs about $0.11 per hour of video
 ```
 
 - `commonnotes` copies every commonnotes.net note with its claim, post, creator and sources from cn-return-bot's production database.
 - `x` reads X's public Community Notes data from a folder of its zip files (notes, noteStatusHistory and ratings, from `https://ton.twimg.com/birdwatch-public-data/<YYYY/MM/DD>/...`). It keeps the notes of the AI notewriters listed in cn-return-bot's `datasets/big_eval/ai_author_ids.txt` that are rated helpful or not helpful, with their ratings, the raters' reasons and the other notes on the same post.
 - `posts` fills in the text of each post. It first copies the posts cn-return-bot already stored, then asks X's free embed endpoint (the address embedded posts load from, no key) for the rest. A post X no longer has is marked unavailable.
+- `transcripts <count>` writes down what is said in the videos of the posts under the newest `<count>` helpful and `<count>` not helpful notes, including videos in the posts they quote. ffmpeg takes the sound from the video and Whisper on Groq transcribes it, so it needs `GROQ_API_KEY` and ffmpeg. Groq's rate limit makes it slow, about 20 videos a minute at best. The cards show a transcript under its video, and `scripts/ai/review.ts show` gives it to the AI reviewer.

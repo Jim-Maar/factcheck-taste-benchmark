@@ -15,7 +15,7 @@ const RATE_LIMIT_PAUSE_MS = 60_000;
 const MAX_RATE_LIMIT_PAUSES = 10;
 export const SYNDICATION_URL = "https://cdn.syndication.twimg.com/tweet-result";
 
-interface XMedia {
+export interface XMedia {
   type: string;
   url?: string;
   preview_image_url?: string;

@@ -1,5 +1,6 @@
 import { target } from "../import/db";
-import { fetchLivePost, indent, liveSource, renderPost } from "./thread";
+import type { XMedia } from "../import/xPosts";
+import { fetchLivePost, indent, liveSource, mediaLines, renderPost, type PostSource } from "./thread";
 
 /* The tool an AI reviewer uses to read X notes and save its review of each.
  * scripts/ai/reviewer.md is the reviewer's instructions. Run from the
@@ -14,7 +15,8 @@ import { fetchLivePost, indent, liveSource, renderPost } from "./thread";
  * from X's embed endpoint, since the stored post holds one level at most and
  * no parent for most replies. It leaves out how X rated the note, the raters'
  * reasons and the other notes on the post, so the review is the reviewer's
- * own judgement.
+ * own judgement. A video that has a transcript (scripts/import/transcripts.ts)
+ * shows what is said in it.
  *
  * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine" }.
  * Saving again with the same model replaces that model's review of the note;
@@ -28,13 +30,15 @@ const RECOMMENDATIONS = ["taste_failure", "fine"];
 const MAX_EXPLANATION_CHARS = 300;
 const MAX_REASONING_CHARS = 300;
 
-interface XMedia {
-  type: string;
-  url?: string;
-  preview_image_url?: string;
-}
-
-const mediaLines = (media: XMedia[] | null | undefined) => (media ?? []).map((m) => `  ${m.type}: ${m.url ?? m.preview_image_url ?? "(no url)"}`);
+/** Posts from X's embed endpoint, with the stored transcripts of their videos. */
+const reviewSource: PostSource = {
+  ...liveSource,
+  async transcript(videoId) {
+    const { data, error } = await target.from("x_video_transcripts").select("transcript").eq("video_id", videoId).maybeSingle();
+    if (error) throw error;
+    return data?.transcript ?? null;
+  },
+};
 
 async function latest(count: number) {
   const { data, error } = await target.from("x_notes").select("note_id, written").order("written", { ascending: false }).limit(count);
@@ -56,14 +60,14 @@ async function show(noteId: string) {
     const stored = [
       `${[post.author_name, post.author_handle && `@${post.author_handle}`].filter(Boolean).join(" ") || "Unknown author"}, ${post.posted_at}:`,
       post.text,
-      ...mediaLines(post.media),
-      ...(post.referenced ? [`It ${post.referenced_kind === "replied_to" ? "replies to" : post.referenced_kind === "quoted" ? "quotes" : "references"} this post:`, ...indent([post.referenced.text ?? "(no text)", ...mediaLines(post.referenced.media)])] : []),
+      ...(await mediaLines(reviewSource, (post.media ?? []) as XMedia[])),
+      ...(post.referenced ? [`It ${post.referenced_kind === "replied_to" ? "replies to" : post.referenced_kind === "quoted" ? "quotes" : "references"} this post:`, ...indent([post.referenced.text ?? "(no text)", ...(await mediaLines(reviewSource, (post.referenced.media ?? []) as XMedia[]))])] : []),
       ...(post.referenced_kind === "replied_to" && !post.referenced ? ["It replies to a post that couldn't be loaded."] : []),
     ];
     return console.log(["POST", ...stored, ...noteLines].join("\n"));
   }
 
-  console.log([...(await renderPost(liveSource, live)), ...noteLines].join("\n"));
+  console.log([...(await renderPost(reviewSource, live)), ...noteLines].join("\n"));
 }
 
 /** The names of the labels people put on notes on the site. */

@@ -1,4 +1,5 @@
-import { displayText, SYNDICATION_URL, syndicationToken, toXMedia, type SyndicationTweet } from "../import/xPosts";
+import { videoId } from "../../src/core/xVideo";
+import { displayText, SYNDICATION_URL, syndicationToken, toXMedia, type SyndicationTweet, type XMedia } from "../import/xPosts";
 
 /* A post as a reader of it meets it on X: the thread above it, oldest first,
  * and what it quotes, and what that quotes, indented under it. Posts come
@@ -13,6 +14,9 @@ export interface PostSource {
   post(tweetId: string): Promise<SyndicationTweet | null>;
   /** Where the reviewer can open a photo or a video's preview image. */
   mediaLocation(url: string): string;
+  /** What is said in a video, "" when it has no speech, or null when it has
+   *  no transcript. Left out where transcripts aren't at hand. */
+  transcript?(videoId: string): Promise<string | null>;
 }
 
 /** One post from X's embed endpoint, or null when it is gone or the fetch failed. */
@@ -34,10 +38,22 @@ export const indent = (lines: string[]) => lines.map((line) => `    ${line}`);
 const byline = (tweet: SyndicationTweet) =>
   `${[tweet.user?.name, tweet.user?.screen_name && `@${tweet.user.screen_name}`].filter(Boolean).join(" ") || "Unknown author"}, ${tweet.created_at ?? "unknown date"}`;
 
+/** A post's photos and videos, each video with its transcript when it has one. */
+export async function mediaLines(source: PostSource, media: XMedia[]): Promise<string[]> {
+  const lines: string[] = [];
+  for (const item of media) {
+    lines.push(`  ${item.type}: ${source.mediaLocation(item.url ?? item.preview_image_url ?? "(no url)")}`);
+    const id = videoId(item);
+    const transcript = id && source.transcript ? await source.transcript(id) : null;
+    if (transcript !== null) lines.push(...indent([transcript ? `What is said in the video: ${transcript}` : "The video has no speech."]));
+  }
+  return lines;
+}
+
 /** A post with what it quotes, and what that quotes, indented under it. The
  *  embed gives a quoted post without its own quote, so each one is fetched. */
 async function postLines(source: PostSource, tweet: SyndicationTweet, quoteDepth = 0): Promise<string[]> {
-  const media = (tweet.mediaDetails ?? []).map(toXMedia).map((m) => `  ${m.type}: ${source.mediaLocation(m.url ?? m.preview_image_url ?? "(no url)")}`);
+  const media = await mediaLines(source, (tweet.mediaDetails ?? []).map(toXMedia));
   const lines = [`${byline(tweet)}:`, ...displayText(tweet).split("\n"), ...media];
   const quoted = tweet.quoted_tweet;
   if (!quoted) return lines;

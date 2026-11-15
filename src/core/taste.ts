@@ -18,6 +18,9 @@ export type Verdict = "taste_failure" | "somewhat" | "fine" | "unsure";
 /** Whether a note is factually correct, judged apart from its taste. */
 export type Accuracy = "correct" | "unconvincing" | "partly" | "wrong" | "unsure";
 
+/** Whether the post needs a community note at all. */
+export type NeedsNote = "yes" | "no" | "unsure";
+
 export interface Label {
   id: number;
   name: string;
@@ -103,11 +106,16 @@ export interface XNote {
      *  the threads import has fetched it. `complete` is false when the thread
      *  goes on further up than was fetched. */
     thread?: { posts: XEmbeddedPost[]; complete: boolean } | null;
+    /** What is said in the post's videos, and in those of the posts it quotes
+     *  or replies to, by video id (src/core/xVideo.ts). An empty text means
+     *  the video has no speech. Only some videos are transcribed. */
+    transcripts?: Record<string, { text: string; language: string | null }>;
   };
   /** The other notes on the same post, by anyone. */
   otherNotes: { noteId: string; text: string; status: NoteStatus; isAi: boolean }[];
   verdict: Verdict | null;
   accuracy: Accuracy | null;
+  needsNote: NeedsNote | null;
   labels: Label[];
   /** Every model's review of the note, by model. */
   ai: AiReview[];
@@ -126,6 +134,7 @@ export interface CnNote {
   project: ProjectHeader | null;
   verdict: Verdict | null;
   accuracy: Accuracy | null;
+  needsNote: NeedsNote | null;
   labels: Label[];
   /** Every model's review of the note, by model. */
   ai: AiReview[];
@@ -244,6 +253,14 @@ export async function saveAccuracy(source: Source, noteId: string, accuracy: Acc
   const { error } = accuracy
     ? await supabase.from("accuracy").upsert({ source, note_id: noteId, accuracy, updated_at: new Date().toISOString() })
     : await supabase.from("accuracy").delete().match({ source, note_id: noteId });
+  if (error) throw error;
+}
+
+/** Sets whether a note's post needs a community note, or clears it with null. */
+export async function saveNeedsNote(source: Source, noteId: string, answer: NeedsNote | null): Promise<void> {
+  const { error } = answer
+    ? await supabase.from("needs_note").upsert({ source, note_id: noteId, answer, updated_at: new Date().toISOString() })
+    : await supabase.from("needs_note").delete().match({ source, note_id: noteId });
   if (error) throw error;
 }
 

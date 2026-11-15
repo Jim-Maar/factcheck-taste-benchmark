@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import type { XEmbeddedPost, XMedia, XNote } from "@cn/core/taste";
 import { Button } from "@cn/ui/Button";
 import { cn } from "@cn/ui/cn";
 import { PlayIcon } from "@cn/ui/icons";
 import { getBestMediaUrl } from "@cn/shared/bestMediaUrl";
 import { LinkifiedText } from "@cn/shared/LinkifiedText";
+import { videoId } from "@cn/core/xVideo";
 
 type Post = XNote["post"];
 
@@ -52,22 +53,49 @@ function MediaTile({ item, url, lone, className }: { item: XMedia; url: string; 
   );
 }
 
+/** The transcripts of the videos on the card, by video id. */
+const TranscriptsContext = createContext<NonNullable<Post["transcripts"]>>({});
+
+/** A video's transcript behind a toggle. A video without speech says so. */
+function Transcript({ text, number }: { text: string; number: number | null }) {
+  const [open, setOpen] = useState(false);
+  const name = number === null ? "transcript" : `transcript of video ${number}`;
+  return (
+    <div>
+      <Button variant="link" className="text-xs" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        {open ? `Hide the ${name}` : `Show the ${name}`}
+      </Button>
+      {open && <p className="mt-1.5 whitespace-pre-wrap rounded-card bg-surface-muted p-3 text-sm text-fg-secondary">{text || "The video has no speech."}</p>}
+    </div>
+  );
+}
+
 /** A post's photos and videos as X lays them out: one at its own shape, and
  *  two to four in a 16:9 frame, side by side, with the first of three taking
  *  the whole left half. */
 function Media({ media }: { media: XMedia[] }) {
+  const allTranscripts = useContext(TranscriptsContext);
   const shown = media.flatMap((item) => {
     const url = getBestMediaUrl(item);
     return url ? [{ item, url }] : [];
   }).slice(0, 4);
   if (shown.length === 0) return null;
   const lone = shown.length === 1;
+  const videoCount = shown.filter(({ item }) => item.type === "video").length;
+  const transcripts = shown.flatMap(({ item }, i) => {
+    const id = videoId(item);
+    const transcript = id ? allTranscripts[id] : undefined;
+    return transcript ? [{ id: id!, text: transcript.text, number: videoCount > 1 ? i + 1 : null }] : [];
+  });
   return (
-    <div className={cn("overflow-hidden rounded-card border border-line", !lone && "grid aspect-video grid-cols-2 gap-0.5", shown.length > 2 ? "grid-rows-2" : "grid-rows-1")}>
-      {shown.map(({ item, url }, i) => (
-        <MediaTile key={url} item={item} url={url} lone={lone} className={cn(shown.length === 3 && i === 0 && "row-span-2")} />
-      ))}
-    </div>
+    <>
+      <div className={cn("overflow-hidden rounded-card border border-line", !lone && "grid aspect-video grid-cols-2 gap-0.5", shown.length > 2 ? "grid-rows-2" : "grid-rows-1")}>
+        {shown.map(({ item, url }, i) => (
+          <MediaTile key={url} item={item} url={url} lone={lone} className={cn(shown.length === 3 && i === 0 && "row-span-2")} />
+        ))}
+      </div>
+      {transcripts.map(({ id, text, number }) => <Transcript key={id} text={text} number={number} />)}
+    </>
   );
 }
 
@@ -166,6 +194,7 @@ export function XPostCard({ post }: { post: Post }) {
   // With the thread at hand, the post it replies to is the thread's last one.
   const showReferenced = referenced && !(referenced.kind === "replied_to" && (post.thread?.posts.length ?? 0) > 0);
   return (
+    <TranscriptsContext.Provider value={post.transcripts ?? {}}>
     <div className="space-y-3 rounded-card border border-line p-3 [overflow-wrap:anywhere]">
       {post.thread && <Thread thread={post.thread} postId={post.id} />}
       <div className="space-y-2">
@@ -180,5 +209,6 @@ export function XPostCard({ post }: { post: Post }) {
         {showReferenced && <EmbeddedPost post={referenced} label={REFERENCED_LABEL[referenced.kind ?? "quoted"]} />}
       </div>
     </div>
+    </TranscriptsContext.Provider>
   );
 }

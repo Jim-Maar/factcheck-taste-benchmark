@@ -72,8 +72,8 @@ export async function fetchAllRows<T extends Record<string, unknown>>(client: Su
 }
 
 /** The rows of a table whose `column` is one of `values`, read in chunks
- *  small enough for a web address. */
-export async function fetchRowsIn<T>(client: SupabaseClient, table: string, columns: string, column: string, values: string[]): Promise<T[]> {
+ *  small enough for a web address, from cn-return-bot's database or this one. */
+export async function fetchRowsIn<T>(client: SupabaseClient | typeof target, table: string, columns: string, column: string, values: string[]): Promise<T[]> {
   const rows: T[] = [];
   for (let start = 0; start < values.length; start += SOURCE_IN_CHUNK_SIZE) {
     const { data, error } = await client.from(table).select(columns).in(column, values.slice(start, start + SOURCE_IN_CHUNK_SIZE));
