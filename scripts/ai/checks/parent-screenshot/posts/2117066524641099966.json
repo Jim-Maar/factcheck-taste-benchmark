@@ -1,0 +1,169 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 2238,
+  "lang": "ja",
+  "possibly_sensitive": false,
+  "created_at": "2026-11-02T01:29:27.000Z",
+  "display_text_range": [
+    0,
+    91
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.x.com/3kIVt8Md9G",
+        "expanded_url": "https://x.com/KNHjyohokyoku/status/2117066524641099966/photo/1",
+        "indices": [
+          92,
+          115
+        ],
+        "url": "https://t.co/3kIVt8Md9G"
+      }
+    ]
+  },
+  "id_str": "2117066524641099966",
+  "text": "論点が違います。\n\n問題にしているのは、米国産の生鮮ジャガイモの輸入解禁に伴う病害虫の侵入リスクです。\n\n中国産であろうと米国産であろうと、同じリスクがあれば同じように問題にします。 https://t.co/3kIVt8Md9G",
+  "user": {
+    "id_str": "827526090130272256",
+    "name": "樺島万里子 Mariko Kabashima",
+    "screen_name": "KNHjyohokyoku",
+    "is_blue_verified": true,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1684981008775696384/VpL5gAbi_normal.jpg"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2117066524641099966"
+    ],
+    "editable_until_msecs": "1793586567000",
+    "edits_remaining": "5",
+    "is_edit_eligible": true
+  },
+  "mediaDetails": [
+    {
+      "display_url": "pic.x.com/3kIVt8Md9G",
+      "expanded_url": "https://x.com/KNHjyohokyoku/status/2117066524641099966/photo/1",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        92,
+        115
+      ],
+      "media_url_https": "https://pbs.twimg.com/media/HWFUwABbAAAb0r7.png",
+      "original_info": {
+        "focus_rects": [
+          {
+            "h": 216,
+            "w": 386,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 216,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 189,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 108,
+            "x": 27,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 466,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "height": 216,
+        "width": 466
+      },
+      "sizes": {
+        "large": {
+          "h": 216,
+          "resize": "fit",
+          "w": 466
+        },
+        "medium": {
+          "h": 216,
+          "resize": "fit",
+          "w": 466
+        },
+        "small": {
+          "h": 216,
+          "resize": "fit",
+          "w": 466
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "photo",
+      "url": "https://t.co/3kIVt8Md9G"
+    }
+  ],
+  "photos": [
+    {
+      "backgroundColor": {
+        "red": 204,
+        "green": 214,
+        "blue": 221
+      },
+      "cropCandidates": [
+        {
+          "h": 216,
+          "w": 386,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "h": 216,
+          "w": 216,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "h": 216,
+          "w": 189,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "h": 216,
+          "w": 108,
+          "x": 27,
+          "y": 0
+        },
+        {
+          "h": 216,
+          "w": 466,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "expandedUrl": "https://x.com/KNHjyohokyoku/status/2117066524641099966/photo/1",
+      "url": "https://pbs.twimg.com/media/HWFUwABbAAAb0r7.png",
+      "width": 466,
+      "height": 216
+    }
+  ],
+  "conversation_count": 27,
+  "news_action_type": "conversation",
+  "isEdited": false,
+  "isStaleEdit": false,
+  "note_tweet": {
+    "id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTE3MDY2NTI0NTkwODEzMTg0"
+  }
+}

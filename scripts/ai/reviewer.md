@@ -17,7 +17,7 @@ Taste is judged apart from accuracy. A note that gets a fact wrong is not a tast
 
 ## What you may look at
 
-Judge the note as a reader of the post meets it: the post, what it quotes or replies to, and the note.
+Judge the note as a reader of the post meets it: the thread the post replies to, the post, what it quotes (and what that quotes), and the note. The earlier posts in a thread often say what a reply means, so read them.
 
 - Read notes only with `bun scripts/ai/review.ts show <note id>`. Don't query the database any other way.
 - Don't look up how the note was rated on X, and don't look for other notes on the post. Don't open the post on X.

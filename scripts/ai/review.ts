@@ -1,4 +1,5 @@
 import { target } from "../import/db";
+import { fetchLivePost, indent, liveSource, renderPost } from "./thread";
 
 /* The tool an AI reviewer uses to read X notes and save its review of each.
  * scripts/ai/reviewer.md is the reviewer's instructions. Run from the
@@ -9,8 +10,11 @@ import { target } from "../import/db";
  *   bun scripts/ai/review.ts labels             the labels a review may use
  *   bun scripts/ai/review.ts save <note id> <model> < review.json
  *
- * `show` leaves out how X rated the note, the raters' reasons and the other
- * notes on the post, so the review is the reviewer's own judgement.
+ * `show` fetches the thread above the post and the posts it quotes, nested,
+ * from X's embed endpoint, since the stored post holds one level at most and
+ * no parent for most replies. It leaves out how X rated the note, the raters'
+ * reasons and the other notes on the post, so the review is the reviewer's
+ * own judgement.
  *
  * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine" }.
  * Saving again replaces the note's review. The site shows a saved review at once. */
@@ -41,15 +45,23 @@ async function show(noteId: string) {
   if (error) throw error;
   const { data: post, error: postError } = await target.from("x_posts").select("*").eq("tweet_id", note.tweet_id).maybeSingle();
   if (postError) throw postError;
-  const postLines = !post?.available
-    ? ["The post is deleted or no longer public on X."]
-    : [
-        `${[post.author_name, post.author_handle && `@${post.author_handle}`].filter(Boolean).join(" ") || "Unknown author"}, ${post.posted_at}:`,
-        post.text,
-        ...mediaLines(post.media),
-        ...(post.referenced ? [`It ${post.referenced_kind === "replied_to" ? "replies to" : post.referenced_kind ?? "references"} this post:`, post.referenced.text ?? "(no text)", ...mediaLines(post.referenced.media)] : []),
-      ];
-  console.log(["POST", ...postLines, "", `NOTE, written ${note.written}`, note.note_text].join("\n"));
+  const noteLines = ["", `NOTE, written ${note.written}`, note.note_text];
+  if (!post?.available) return console.log(["POST", "The post is deleted or no longer public on X.", ...noteLines].join("\n"));
+
+  const live = await fetchLivePost(note.tweet_id);
+  if (!live) {
+    // X no longer serves the post, so its thread and quotes can't be followed: show what was stored.
+    const stored = [
+      `${[post.author_name, post.author_handle && `@${post.author_handle}`].filter(Boolean).join(" ") || "Unknown author"}, ${post.posted_at}:`,
+      post.text,
+      ...mediaLines(post.media),
+      ...(post.referenced ? [`It ${post.referenced_kind === "replied_to" ? "replies to" : post.referenced_kind === "quoted" ? "quotes" : "references"} this post:`, ...indent([post.referenced.text ?? "(no text)", ...mediaLines(post.referenced.media)])] : []),
+      ...(post.referenced_kind === "replied_to" && !post.referenced ? ["It replies to a post that couldn't be loaded."] : []),
+    ];
+    return console.log(["POST", ...stored, ...noteLines].join("\n"));
+  }
+
+  console.log([...(await renderPost(liveSource, live)), ...noteLines].join("\n"));
 }
 
 /** The names of the labels people put on notes on the site. */

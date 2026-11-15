@@ -1,0 +1,329 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 11655,
+  "lang": "en",
+  "possibly_sensitive": false,
+  "created_at": "2026-11-09T02:46:42.000Z",
+  "display_text_range": [
+    0,
+    65
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.x.com/CRUjbpE9S7",
+        "expanded_url": "https://x.com/crusade_enjoyer/status/2042259735676600379/video/1",
+        "indices": [
+          42,
+          65
+        ],
+        "url": "https://t.co/CRUjbpE9S7"
+      }
+    ]
+  },
+  "id_str": "2119622681163415904",
+  "text": "No one in this video celebrated “Diwali”  https://t.co/CRUjbpE9S7",
+  "user": {
+    "id_str": "1822321218717925376",
+    "name": "Fanatic 🇺🇸",
+    "screen_name": "crusade_enjoyer",
+    "is_blue_verified": true,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/2118024665255772160/39bKBIFz_normal.jpg"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2119622681163415904"
+    ],
+    "editable_until_msecs": "1794196002000",
+    "edits_remaining": "5",
+    "is_edit_eligible": false
+  },
+  "mediaDetails": [
+    {
+      "additional_media_info": {},
+      "display_url": "pic.x.com/CRUjbpE9S7",
+      "expanded_url": "https://x.com/crusade_enjoyer/status/2042259735676600379/video/1",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        42,
+        65
+      ],
+      "media_url_https": "https://pbs.twimg.com/amplify_video_thumb/2042259626423463936/img/JtjbiGmFdN4yplCu.jpg",
+      "original_info": {
+        "focus_rects": [],
+        "height": 1080,
+        "width": 1080
+      },
+      "sizes": {
+        "large": {
+          "h": 1080,
+          "resize": "fit",
+          "w": 1080
+        },
+        "medium": {
+          "h": 1080,
+          "resize": "fit",
+          "w": 1080
+        },
+        "small": {
+          "h": 680,
+          "resize": "fit",
+          "w": 680
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "video",
+      "url": "https://t.co/CRUjbpE9S7",
+      "video_info": {
+        "aspect_ratio": [
+          1,
+          1
+        ],
+        "duration_millis": 27167,
+        "variants": [
+          {
+            "content_type": "application/x-mpegURL",
+            "url": "https://video.twimg.com/amplify_video/2042259626423463936/pl/hILf_c6mBKe4ui3v.m3u8?v=cfc"
+          },
+          {
+            "bitrate": 432000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/320x320/AFQ81aYWn2gPo40A.mp4"
+          },
+          {
+            "bitrate": 832000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/540x540/oq4uKpwtJTo3Z-g3.mp4"
+          },
+          {
+            "bitrate": 1280000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/720x720/tmPRk23fykLvewXB.mp4"
+          },
+          {
+            "bitrate": 8768000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/1080x1080/kI49ui2vV3iQ7BEX.mp4"
+          }
+        ]
+      }
+    }
+  ],
+  "photos": [],
+  "video": {
+    "aspectRatio": [
+      1,
+      1
+    ],
+    "contentType": "media_entity",
+    "durationMs": 27167,
+    "mediaAvailability": {
+      "status": "available"
+    },
+    "poster": "https://pbs.twimg.com/amplify_video_thumb/2042259626423463936/img/JtjbiGmFdN4yplCu.jpg",
+    "variants": [
+      {
+        "type": "application/x-mpegURL",
+        "src": "https://video.twimg.com/amplify_video/2042259626423463936/pl/hILf_c6mBKe4ui3v.m3u8?v=cfc"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/320x320/AFQ81aYWn2gPo40A.mp4"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/540x540/oq4uKpwtJTo3Z-g3.mp4"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/720x720/tmPRk23fykLvewXB.mp4"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2042259626423463936/vid/avc1/1080x1080/kI49ui2vV3iQ7BEX.mp4"
+      }
+    ],
+    "videoId": {
+      "type": "tweet",
+      "id": "2119622681163415904"
+    },
+    "viewCount": 0
+  },
+  "conversation_count": 137,
+  "news_action_type": "conversation",
+  "quoted_tweet": {
+    "favorite_count": 3201,
+    "lang": "en",
+    "possibly_sensitive": false,
+    "reply_count": 45,
+    "retweet_count": 278,
+    "created_at": "2026-11-09T01:51:31.000Z",
+    "display_text_range": [
+      0,
+      43
+    ],
+    "entities": {
+      "media": [
+        {
+          "display_url": "pic.x.com/RzoZNsFtX5",
+          "expanded_url": "https://x.com/PineTreePatrick/status/2119608795529630132/photo/1",
+          "indices": [
+            44,
+            67
+          ],
+          "url": "https://t.co/RzoZNsFtX5"
+        }
+      ]
+    },
+    "id_str": "2119608795529630132",
+    "text": "No one in this picture celebrated \"Diwali.\" https://t.co/RzoZNsFtX5",
+    "user": {
+      "id_str": "1849870556142895105",
+      "name": "Patrick Underhill 🌲",
+      "screen_name": "PineTreePatrick",
+      "is_blue_verified": false,
+      "profile_image_shape": "Circle",
+      "verified": false,
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/2090443235969597440/WxZb3hfS_normal.jpg"
+    },
+    "edit_control": {
+      "edit_tweet_ids": [
+        "2119608795529630132"
+      ],
+      "editable_until_msecs": "1794192691000",
+      "edits_remaining": "5",
+      "is_edit_eligible": true
+    },
+    "mediaDetails": [
+      {
+        "display_url": "pic.x.com/RzoZNsFtX5",
+        "expanded_url": "https://x.com/PineTreePatrick/status/2119608795529630132/photo/1",
+        "ext_media_availability": {
+          "status": "Available"
+        },
+        "indices": [
+          44,
+          67
+        ],
+        "media_url_https": "https://pbs.twimg.com/media/HWpc9JhWsAAO5A_.jpg",
+        "original_info": {
+          "focus_rects": [
+            {
+              "h": 717,
+              "w": 1280,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 820,
+              "w": 820,
+              "x": 70,
+              "y": 0
+            },
+            {
+              "h": 820,
+              "w": 719,
+              "x": 121,
+              "y": 0
+            },
+            {
+              "h": 820,
+              "w": 410,
+              "x": 275,
+              "y": 0
+            },
+            {
+              "h": 820,
+              "w": 1280,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "height": 820,
+          "width": 1280
+        },
+        "sizes": {
+          "large": {
+            "h": 820,
+            "resize": "fit",
+            "w": 1280
+          },
+          "medium": {
+            "h": 769,
+            "resize": "fit",
+            "w": 1200
+          },
+          "small": {
+            "h": 436,
+            "resize": "fit",
+            "w": 680
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "photo",
+        "url": "https://t.co/RzoZNsFtX5"
+      }
+    ],
+    "photos": [
+      {
+        "backgroundColor": {
+          "red": 204,
+          "green": 214,
+          "blue": 221
+        },
+        "cropCandidates": [
+          {
+            "h": 717,
+            "w": 1280,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 820,
+            "w": 820,
+            "x": 70,
+            "y": 0
+          },
+          {
+            "h": 820,
+            "w": 719,
+            "x": 121,
+            "y": 0
+          },
+          {
+            "h": 820,
+            "w": 410,
+            "x": 275,
+            "y": 0
+          },
+          {
+            "h": 820,
+            "w": 1280,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "expandedUrl": "https://x.com/PineTreePatrick/status/2119608795529630132/photo/1",
+        "url": "https://pbs.twimg.com/media/HWpc9JhWsAAO5A_.jpg",
+        "width": 1280,
+        "height": 820
+      }
+    ],
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "isEdited": false,
+  "isStaleEdit": false
+}

@@ -13,7 +13,7 @@ const WRITE_BATCH_SIZE = 50;
 const PROGRESS_EVERY = 250;
 const RATE_LIMIT_PAUSE_MS = 60_000;
 const MAX_RATE_LIMIT_PAUSES = 10;
-const SYNDICATION_URL = "https://cdn.syndication.twimg.com/tweet-result";
+export const SYNDICATION_URL = "https://cdn.syndication.twimg.com/tweet-result";
 
 interface XMedia {
   type: string;
@@ -102,16 +102,17 @@ async function copyStoredPosts(source: SupabaseClient, tweetIds: string[]): Prom
 }
 
 /** The token X's embed widget sends with a request, as react-tweet computes it. */
-const syndicationToken = (id: string) => ((Number(id) / 1e15) * Math.PI).toString(36).replace(/(0+|\.)/g, "");
+export const syndicationToken = (id: string) => ((Number(id) / 1e15) * Math.PI).toString(36).replace(/(0+|\.)/g, "");
 
-type SyndicationMedia = {
+export type SyndicationMedia = {
   type: string;
   media_url_https: string;
   video_info?: { variants: { url: string; bitrate?: number; content_type: string }[] };
 };
 
-type SyndicationTweet = {
+export type SyndicationTweet = {
   __typename?: string;
+  id_str?: string;
   text?: string;
   created_at?: string;
   display_text_range?: [number, number];
@@ -123,7 +124,7 @@ type SyndicationTweet = {
 };
 
 /** A photo, video or gif in the X API's shape, which the cards read. */
-function toXMedia(media: SyndicationMedia): XMedia {
+export function toXMedia(media: SyndicationMedia): XMedia {
   if (media.type === "photo") return { type: "photo", url: media.media_url_https };
   return {
     type: media.type,
@@ -136,10 +137,11 @@ const HTML_ENTITIES: Record<string, string> = { "&amp;": "&", "&lt;": "<", "&gt;
 
 /** The text as X shows it: without the trailing link to the post's own
  *  media, with short links expanded and HTML entities decoded. */
-function displayText(tweet: SyndicationTweet): string {
-  const chars = Array.from(tweet.text ?? "");
-  const [start, end] = tweet.display_text_range ?? [0, chars.length];
-  let text = chars.slice(start, end).join("");
+export function displayText(tweet: SyndicationTweet): string {
+  // X counts the range in UTF-16 code units, as JavaScript strings do.
+  const full = tweet.text ?? "";
+  const [start, end] = tweet.display_text_range ?? [0, full.length];
+  let text = full.slice(start, end);
   for (const link of tweet.entities?.urls ?? []) text = text.replaceAll(link.url, link.expanded_url);
   return text.replace(/&(amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }

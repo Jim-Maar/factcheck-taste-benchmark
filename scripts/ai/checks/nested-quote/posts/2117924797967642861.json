@@ -1,0 +1,318 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 542,
+  "lang": "ja",
+  "possibly_sensitive": false,
+  "created_at": "2026-11-04T10:19:55.000Z",
+  "display_text_range": [
+    0,
+    105
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.x.com/h3eCmrFsaV",
+        "expanded_url": "https://x.com/Zimo41650079726/status/2117924797967642861/video/1",
+        "indices": [
+          105,
+          128
+        ],
+        "url": "https://t.co/h3eCmrFsaV"
+      }
+    ]
+  },
+  "id_str": "2117924797967642861",
+  "text": "カワウソさんの真似をして、MuseにBlenderとPLATEAUを入れて静止画をつくり、それをMuse Videoに参照させて東京駅の動画をつくってみたのだけど、だんだん時計が増えていく恐怖動画になったよ😅 https://t.co/h3eCmrFsaV",
+  "user": {
+    "id_str": "1637794491343192064",
+    "name": "Zimo",
+    "screen_name": "Zimo41650079726",
+    "is_blue_verified": false,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1637796109711183872/AtlxwZSe_normal.jpg"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2117924797967642861"
+    ],
+    "editable_until_msecs": "1793791195000",
+    "edits_remaining": "5",
+    "is_edit_eligible": false
+  },
+  "mediaDetails": [
+    {
+      "additional_media_info": {},
+      "display_url": "pic.x.com/h3eCmrFsaV",
+      "expanded_url": "https://x.com/Zimo41650079726/status/2117924797967642861/video/1",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        105,
+        128
+      ],
+      "media_url_https": "https://pbs.twimg.com/amplify_video_thumb/2117924633072803840/img/8K_JWM8pqAgEEkSa.jpg",
+      "original_info": {
+        "focus_rects": [],
+        "height": 768,
+        "width": 1152
+      },
+      "sizes": {
+        "large": {
+          "h": 768,
+          "resize": "fit",
+          "w": 1152
+        },
+        "medium": {
+          "h": 768,
+          "resize": "fit",
+          "w": 1152
+        },
+        "small": {
+          "h": 453,
+          "resize": "fit",
+          "w": 680
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "video",
+      "url": "https://t.co/h3eCmrFsaV",
+      "video_info": {
+        "aspect_ratio": [
+          3,
+          2
+        ],
+        "duration_millis": 10000,
+        "variants": [
+          {
+            "content_type": "application/x-mpegURL",
+            "url": "https://video.twimg.com/amplify_video/2117924633072803840/pl/YRTeHrEzzkUm11u6.m3u8?tag=14&v=cfc"
+          },
+          {
+            "bitrate": 288000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2117924633072803840/vid/avc1/404x270/pmRG5mB30KEiipIk.mp4?tag=14"
+          },
+          {
+            "bitrate": 832000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2117924633072803840/vid/avc1/540x360/tb1tHhbk9d_wUZ-K.mp4?tag=14"
+          },
+          {
+            "bitrate": 2176000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2117924633072803840/vid/avc1/1080x720/W34igUjiBg5VObhf.mp4?tag=14"
+          }
+        ]
+      }
+    }
+  ],
+  "photos": [],
+  "video": {
+    "aspectRatio": [
+      3,
+      2
+    ],
+    "contentType": "media_entity",
+    "durationMs": 10000,
+    "mediaAvailability": {
+      "status": "available"
+    },
+    "poster": "https://pbs.twimg.com/amplify_video_thumb/2117924633072803840/img/8K_JWM8pqAgEEkSa.jpg",
+    "variants": [
+      {
+        "type": "application/x-mpegURL",
+        "src": "https://video.twimg.com/amplify_video/2117924633072803840/pl/YRTeHrEzzkUm11u6.m3u8?tag=14&v=cfc"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2117924633072803840/vid/avc1/404x270/pmRG5mB30KEiipIk.mp4?tag=14"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2117924633072803840/vid/avc1/540x360/tb1tHhbk9d_wUZ-K.mp4?tag=14"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2117924633072803840/vid/avc1/1080x720/W34igUjiBg5VObhf.mp4?tag=14"
+      }
+    ],
+    "videoId": {
+      "type": "tweet",
+      "id": "2117924797967642861"
+    },
+    "viewCount": 0
+  },
+  "conversation_count": 7,
+  "news_action_type": "conversation",
+  "quoted_tweet": {
+    "favorite_count": 700,
+    "lang": "ja",
+    "possibly_sensitive": false,
+    "reply_count": 9,
+    "retweet_count": 56,
+    "created_at": "2026-11-01T12:20:45.000Z",
+    "display_text_range": [
+      0,
+      161
+    ],
+    "entities": {
+      "media": [
+        {
+          "display_url": "pic.x.com/9bziVMe8bX",
+          "expanded_url": "https://x.com/boke_ai/status/2116868040537276831/video/1",
+          "indices": [
+            162,
+            185
+          ],
+          "url": "https://t.co/9bziVMe8bX"
+        }
+      ]
+    },
+    "id_str": "2116868040537276831",
+    "text": "地図のデータから Blender で街を組んで、Kling 4.0 で実写にしてみた\n\n地元の地図データから架空の街「おぼろが丘」を作っています\n\nこの街をセカボケの舞台にする\n\n3D都市モデル：国土交通省 PLATEAU／標高：国土地理院／© OpenStreetMap contributors（いずれも加工して作成） https://t.co/9bziVMe8bX",
+    "user": {
+      "id_str": "1647100230612185088",
+      "name": "絵空事テレビ / AIカワウソ",
+      "screen_name": "boke_ai",
+      "is_blue_verified": true,
+      "profile_image_shape": "Circle",
+      "verified": false,
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/2046437921084129280/iKpVuFzU_normal.jpg"
+    },
+    "edit_control": {
+      "edit_tweet_ids": [
+        "2116868040537276831"
+      ],
+      "editable_until_msecs": "1793539245000",
+      "edits_remaining": "5",
+      "is_edit_eligible": true
+    },
+    "mediaDetails": [
+      {
+        "additional_media_info": {},
+        "display_url": "pic.x.com/9bziVMe8bX",
+        "expanded_url": "https://x.com/boke_ai/status/2116868040537276831/video/1",
+        "ext_media_availability": {
+          "status": "Available"
+        },
+        "indices": [
+          162,
+          185
+        ],
+        "media_url_https": "https://pbs.twimg.com/amplify_video_thumb/2116866382130540545/img/Z0x78T84Y1cgNgxR.jpg",
+        "original_info": {
+          "focus_rects": [],
+          "height": 1440,
+          "width": 1280
+        },
+        "sizes": {
+          "large": {
+            "h": 1440,
+            "resize": "fit",
+            "w": 1280
+          },
+          "medium": {
+            "h": 1200,
+            "resize": "fit",
+            "w": 1067
+          },
+          "small": {
+            "h": 680,
+            "resize": "fit",
+            "w": 604
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "video",
+        "url": "https://t.co/9bziVMe8bX",
+        "video_info": {
+          "aspect_ratio": [
+            8,
+            9
+          ],
+          "duration_millis": 12000,
+          "variants": [
+            {
+              "content_type": "application/x-mpegURL",
+              "url": "https://video.twimg.com/amplify_video/2116866382130540545/pl/v8_vUz6l_BUU7fiU.m3u8?v=cfc"
+            },
+            {
+              "bitrate": 632000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/320x360/T1TqMKvVcyAxIDQ6.mp4"
+            },
+            {
+              "bitrate": 950000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/480x540/0QNsXrPyHo-o38MP.mp4"
+            },
+            {
+              "bitrate": 2176000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/720x810/THJwBiVEv8S7hq-a.mp4"
+            },
+            {
+              "bitrate": 10368000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/1280x1440/-MPTlNoCJk3sjpPO.mp4"
+            }
+          ]
+        }
+      }
+    ],
+    "photos": [],
+    "video": {
+      "aspectRatio": [
+        8,
+        9
+      ],
+      "contentType": "media_entity",
+      "durationMs": 12000,
+      "mediaAvailability": {
+        "status": "available"
+      },
+      "poster": "https://pbs.twimg.com/amplify_video_thumb/2116866382130540545/img/Z0x78T84Y1cgNgxR.jpg",
+      "variants": [
+        {
+          "type": "application/x-mpegURL",
+          "src": "https://video.twimg.com/amplify_video/2116866382130540545/pl/v8_vUz6l_BUU7fiU.m3u8?v=cfc"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/320x360/T1TqMKvVcyAxIDQ6.mp4"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/480x540/0QNsXrPyHo-o38MP.mp4"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/720x810/THJwBiVEv8S7hq-a.mp4"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2116866382130540545/vid/avc1/1280x1440/-MPTlNoCJk3sjpPO.mp4"
+        }
+      ],
+      "videoId": {
+        "type": "tweet",
+        "id": "2116868040537276831"
+      },
+      "viewCount": 0
+    },
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "isEdited": false,
+  "isStaleEdit": false
+}

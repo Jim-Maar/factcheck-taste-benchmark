@@ -1,0 +1,392 @@
+{
+  "__typename": "Tweet",
+  "conversation_control": {
+    "policy": "ByInvitation"
+  },
+  "favorite_count": 800,
+  "lang": "ja",
+  "possibly_sensitive": false,
+  "created_at": "2026-11-07T07:32:35.000Z",
+  "display_text_range": [
+    0,
+    107
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.x.com/faQdApc0oq",
+        "expanded_url": "https://x.com/noel_ai_lab/status/2118969848776847572/video/1",
+        "indices": [
+          108,
+          131
+        ],
+        "url": "https://t.co/faQdApc0oq"
+      }
+    ]
+  },
+  "id_str": "2118969848776847572",
+  "text": "おおおお！！姫路城もできたww\n今回もMuseで一発ポン出し\nドローン飛ばさなくても空撮みたいな映像になるし、3Dデータがある地域なら、お城以外にも温泉街とか商店街の観光動画にも使えそう\n作り方はリプ欄に置いとく↓ https://t.co/faQdApc0oq",
+  "user": {
+    "id_str": "2056578379869241344",
+    "name": "のえる｜AI動画クリエイター",
+    "screen_name": "noel_ai_lab",
+    "is_blue_verified": true,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/2071210369629224960/oP64VOXS_normal.jpg"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2118969848776847572"
+    ],
+    "editable_until_msecs": "1794040355000",
+    "edits_remaining": "5",
+    "is_edit_eligible": false
+  },
+  "mediaDetails": [
+    {
+      "additional_media_info": {},
+      "display_url": "pic.x.com/faQdApc0oq",
+      "expanded_url": "https://x.com/noel_ai_lab/status/2118969848776847572/video/1",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        108,
+        131
+      ],
+      "media_url_https": "https://pbs.twimg.com/amplify_video_thumb/2118969811988541440/img/ry8aSiHHGU-_3PKy.jpg",
+      "original_info": {
+        "focus_rects": [],
+        "height": 768,
+        "width": 1152
+      },
+      "sizes": {
+        "large": {
+          "h": 768,
+          "resize": "fit",
+          "w": 1152
+        },
+        "medium": {
+          "h": 768,
+          "resize": "fit",
+          "w": 1152
+        },
+        "small": {
+          "h": 453,
+          "resize": "fit",
+          "w": 680
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "video",
+      "url": "https://t.co/faQdApc0oq",
+      "video_info": {
+        "aspect_ratio": [
+          3,
+          2
+        ],
+        "duration_millis": 30000,
+        "variants": [
+          {
+            "content_type": "application/x-mpegURL",
+            "url": "https://video.twimg.com/amplify_video/2118969811988541440/pl/cffwJ0AaWVH8CBXi.m3u8"
+          },
+          {
+            "bitrate": 256000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/404x270/YeLwrxKsQJ8W3IJt.mp4"
+          },
+          {
+            "bitrate": 832000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/540x360/KhNoCfznHQtlL2EF.mp4"
+          },
+          {
+            "bitrate": 2176000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/1080x720/7aknFGyK1JvfX0Hf.mp4"
+          },
+          {
+            "bitrate": 10368000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/1152x768/7Y_XKg2kDcdNxjiD.mp4"
+          }
+        ]
+      }
+    }
+  ],
+  "photos": [],
+  "video": {
+    "aspectRatio": [
+      3,
+      2
+    ],
+    "contentType": "media_entity",
+    "durationMs": 30000,
+    "mediaAvailability": {
+      "status": "available"
+    },
+    "poster": "https://pbs.twimg.com/amplify_video_thumb/2118969811988541440/img/ry8aSiHHGU-_3PKy.jpg",
+    "variants": [
+      {
+        "type": "application/x-mpegURL",
+        "src": "https://video.twimg.com/amplify_video/2118969811988541440/pl/cffwJ0AaWVH8CBXi.m3u8"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/404x270/YeLwrxKsQJ8W3IJt.mp4"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/540x360/KhNoCfznHQtlL2EF.mp4"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/1080x720/7aknFGyK1JvfX0Hf.mp4"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2118969811988541440/vid/avc1/1152x768/7Y_XKg2kDcdNxjiD.mp4"
+      }
+    ],
+    "videoId": {
+      "type": "tweet",
+      "id": "2118969848776847572"
+    },
+    "viewCount": 0
+  },
+  "conversation_count": 38,
+  "news_action_type": "conversation",
+  "quoted_tweet": {
+    "conversation_control": {
+      "policy": "ByInvitation"
+    },
+    "favorite_count": 1045,
+    "lang": "ja",
+    "possibly_sensitive": false,
+    "reply_count": 12,
+    "retweet_count": 90,
+    "created_at": "2026-11-06T11:52:32.000Z",
+    "display_text_range": [
+      0,
+      101
+    ],
+    "entities": {
+      "media": [
+        {
+          "display_url": "pic.x.com/WszWIN4yhX",
+          "expanded_url": "https://x.com/noel_ai_lab/status/2118672880980611565/video/1",
+          "indices": [
+            102,
+            125
+          ],
+          "url": "https://t.co/WszWIN4yhX"
+        }
+      ]
+    },
+    "id_str": "2118672880980611565",
+    "text": "大阪城、Museに頼んだら30秒でぐるっと回って空撮までできたww Museが国の3Dデータ（PLATEAU）をBlenderに入れて静止画を作って、そのまま動画にしてくれた。作り方はリプ欄に置いとく↓ https://t.co/WszWIN4yhX",
+    "user": {
+      "id_str": "2056578379869241344",
+      "name": "のえる｜AI動画クリエイター",
+      "screen_name": "noel_ai_lab",
+      "is_blue_verified": true,
+      "profile_image_shape": "Circle",
+      "verified": false,
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/2071210369629224960/oP64VOXS_normal.jpg"
+    },
+    "edit_control": {
+      "edit_tweet_ids": [
+        "2118672880980611565"
+      ],
+      "editable_until_msecs": "1793969552000",
+      "edits_remaining": "5",
+      "is_edit_eligible": false
+    },
+    "mediaDetails": [
+      {
+        "additional_media_info": {},
+        "display_url": "pic.x.com/WszWIN4yhX",
+        "expanded_url": "https://x.com/noel_ai_lab/status/2118672880980611565/video/1",
+        "ext_media_availability": {
+          "status": "Available"
+        },
+        "indices": [
+          102,
+          125
+        ],
+        "media_url_https": "https://pbs.twimg.com/amplify_video_thumb/2118672842938318848/img/fYO_eNYLuQvmmRGw.jpg",
+        "original_info": {
+          "focus_rects": [],
+          "height": 768,
+          "width": 1152
+        },
+        "sizes": {
+          "large": {
+            "h": 768,
+            "resize": "fit",
+            "w": 1152
+          },
+          "medium": {
+            "h": 768,
+            "resize": "fit",
+            "w": 1152
+          },
+          "small": {
+            "h": 453,
+            "resize": "fit",
+            "w": 680
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "video",
+        "url": "https://t.co/WszWIN4yhX",
+        "video_info": {
+          "aspect_ratio": [
+            3,
+            2
+          ],
+          "duration_millis": 30000,
+          "variants": [
+            {
+              "content_type": "application/x-mpegURL",
+              "url": "https://video.twimg.com/amplify_video/2118672842938318848/pl/fku3Frl47YmyygCc.m3u8"
+            },
+            {
+              "bitrate": 256000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/404x270/d0U_dXO9aCpbRS49.mp4"
+            },
+            {
+              "bitrate": 832000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/540x360/jXY10MgtsMQZVWhs.mp4"
+            },
+            {
+              "bitrate": 2176000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/1080x720/fgDrCP8eKjJ5_xML.mp4"
+            },
+            {
+              "bitrate": 10368000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/1152x768/-l6RZMlntoDVM3wQ.mp4"
+            }
+          ]
+        }
+      }
+    ],
+    "photos": [],
+    "video": {
+      "aspectRatio": [
+        3,
+        2
+      ],
+      "contentType": "media_entity",
+      "durationMs": 30000,
+      "mediaAvailability": {
+        "status": "available"
+      },
+      "poster": "https://pbs.twimg.com/amplify_video_thumb/2118672842938318848/img/fYO_eNYLuQvmmRGw.jpg",
+      "variants": [
+        {
+          "type": "application/x-mpegURL",
+          "src": "https://video.twimg.com/amplify_video/2118672842938318848/pl/fku3Frl47YmyygCc.m3u8"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/404x270/d0U_dXO9aCpbRS49.mp4"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/540x360/jXY10MgtsMQZVWhs.mp4"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/1080x720/fgDrCP8eKjJ5_xML.mp4"
+        },
+        {
+          "type": "video/mp4",
+          "src": "https://video.twimg.com/amplify_video/2118672842938318848/vid/avc1/1152x768/-l6RZMlntoDVM3wQ.mp4"
+        }
+      ],
+      "videoId": {
+        "type": "tweet",
+        "id": "2118672880980611565"
+      },
+      "viewCount": 0
+    },
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "birdwatch_pivot": {
+    "destinationUrl": "https://twitter.com/i/birdwatch/n/2119268356221972638",
+    "title": "Readers added context they thought people might want to know",
+    "shorttitle": "Readers added context",
+    "visualStyle": "Default",
+    "subtitle": {
+      "text": "この動画はPLATEAU姫路市データを基にしたAI生成ですが実際の姫路城天守構造（連立式大天守・小天守群や千鳥破風・唐破風配置など）と異なり街並みも一致しません。PLATEAU建築物モデルはLOD2程度の簡略データです。\ncity.himeji.lg.jp/castle/0000007…\ngeospatial.jp/ckan/dataset/p…\nmlit.go.jp/plateau/",
+      "entities": [
+        {
+          "fromIndex": 111,
+          "toIndex": 144,
+          "ref": {
+            "url": {
+              "url": "https://t.co/UtstB2AI32",
+              "urlType": "ExternalUrl"
+            }
+          }
+        },
+        {
+          "fromIndex": 145,
+          "toIndex": 174,
+          "ref": {
+            "url": {
+              "url": "https://t.co/eOypQpSbGZ",
+              "urlType": "ExternalUrl"
+            }
+          }
+        },
+        {
+          "fromIndex": 175,
+          "toIndex": 194,
+          "ref": {
+            "url": {
+              "url": "https://t.co/MI8EdRhmDR",
+              "urlType": "ExternalUrl"
+            }
+          }
+        }
+      ]
+    },
+    "iconType": "BirdwatchV1Icon",
+    "footer": {
+      "text": "Context is written by people who use X, and appears when rated helpful by others.  Find out more.",
+      "entities": [
+        {
+          "fromIndex": 83,
+          "toIndex": 96,
+          "ref": {
+            "url": {
+              "url": "https://x.com/i/flow/join-birdwatch",
+              "urlType": "ExternalUrl"
+            }
+          }
+        }
+      ]
+    },
+    "noteId": "2119268356221972638",
+    "footerIconType": "BirdwatchEyeOff"
+  },
+  "isEdited": false,
+  "isStaleEdit": false
+}

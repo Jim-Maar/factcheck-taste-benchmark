@@ -1,0 +1,205 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 2703,
+  "lang": "en",
+  "possibly_sensitive": false,
+  "created_at": "2026-11-10T18:42:25.000Z",
+  "display_text_range": [
+    0,
+    45
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.x.com/g8ao7Krkcn",
+        "expanded_url": "https://x.com/Mens_Corner__/status/2120184715718410632/video/1",
+        "indices": [
+          22,
+          45
+        ],
+        "url": "https://t.co/g8ao7Krkcn"
+      }
+    ]
+  },
+  "id_str": "2120225581656621302",
+  "text": "Absolutely not. Nope. https://t.co/g8ao7Krkcn",
+  "user": {
+    "id_str": "1091735023408033792",
+    "name": "Rudi_with_a_Permit",
+    "screen_name": "toxicAmeriCAN",
+    "is_blue_verified": true,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/2053263871301787652/_RMqmY-z_normal.jpg"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2120225581656621302"
+    ],
+    "editable_until_msecs": "1794339745000",
+    "edits_remaining": "5",
+    "is_edit_eligible": true
+  },
+  "mediaDetails": [
+    {
+      "additional_media_info": {},
+      "display_url": "pic.x.com/g8ao7Krkcn",
+      "expanded_url": "https://x.com/Mens_Corner__/status/2120184715718410632/video/1",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        22,
+        45
+      ],
+      "media_url_https": "https://pbs.twimg.com/amplify_video_thumb/2120178740655263744/img/ecB66vs_5mOTTTro.jpg",
+      "original_info": {
+        "focus_rects": [],
+        "height": 816,
+        "width": 460
+      },
+      "sizes": {
+        "large": {
+          "h": 816,
+          "resize": "fit",
+          "w": 460
+        },
+        "medium": {
+          "h": 816,
+          "resize": "fit",
+          "w": 460
+        },
+        "small": {
+          "h": 680,
+          "resize": "fit",
+          "w": 383
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "video",
+      "url": "https://t.co/g8ao7Krkcn",
+      "video_info": {
+        "aspect_ratio": [
+          115,
+          204
+        ],
+        "duration_millis": 30175,
+        "variants": [
+          {
+            "content_type": "application/x-mpegURL",
+            "url": "https://video.twimg.com/amplify_video/2120178740655263744/pl/Bvq9yKkwiDjWi0i4.m3u8?tag=14&v=cfc"
+          },
+          {
+            "bitrate": 632000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2120178740655263744/vid/avc1/320x566/mO7MSWERmyD3DEBK.mp4?tag=14"
+          },
+          {
+            "bitrate": 950000,
+            "content_type": "video/mp4",
+            "url": "https://video.twimg.com/amplify_video/2120178740655263744/vid/avc1/460x816/XB0SDJZ4wGZ86Sdv.mp4?tag=14"
+          }
+        ]
+      }
+    }
+  ],
+  "photos": [],
+  "video": {
+    "aspectRatio": [
+      115,
+      204
+    ],
+    "contentType": "media_entity",
+    "durationMs": 30175,
+    "mediaAvailability": {
+      "status": "available"
+    },
+    "poster": "https://pbs.twimg.com/amplify_video_thumb/2120178740655263744/img/ecB66vs_5mOTTTro.jpg",
+    "variants": [
+      {
+        "type": "application/x-mpegURL",
+        "src": "https://video.twimg.com/amplify_video/2120178740655263744/pl/Bvq9yKkwiDjWi0i4.m3u8?tag=14&v=cfc"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2120178740655263744/vid/avc1/320x566/mO7MSWERmyD3DEBK.mp4?tag=14"
+      },
+      {
+        "type": "video/mp4",
+        "src": "https://video.twimg.com/amplify_video/2120178740655263744/vid/avc1/460x816/XB0SDJZ4wGZ86Sdv.mp4?tag=14"
+      }
+    ],
+    "videoId": {
+      "type": "tweet",
+      "id": "2120225581656621302"
+    },
+    "viewCount": 0
+  },
+  "conversation_count": 205,
+  "news_action_type": "conversation",
+  "birdwatch_pivot": {
+    "destinationUrl": "https://twitter.com/i/birdwatch/n/2120330982687391986",
+    "title": "Readers added context they thought people might want to know",
+    "shorttitle": "Readers added context",
+    "visualStyle": "Default",
+    "subtitle": {
+      "text": "The video is AI-generated, not real footage of a ship in a storm. It has circulated since March 2026 with early AI labels; fact-checks and physics (e.g. vertical wave wall, level ship) confirm this.\nleadstories.com/hoax-alert/202…\nthreads.net/@meta.ai/post/…\nnewsable.asianetnews.com/world/cargo-sh…",
+      "entities": [
+        {
+          "fromIndex": 199,
+          "toIndex": 230,
+          "ref": {
+            "url": {
+              "url": "https://t.co/pJ85eLwWpX",
+              "urlType": "ExternalUrl"
+            }
+          }
+        },
+        {
+          "fromIndex": 231,
+          "toIndex": 258,
+          "ref": {
+            "url": {
+              "url": "https://t.co/0QXzSdoorV",
+              "urlType": "ExternalUrl"
+            }
+          }
+        },
+        {
+          "fromIndex": 259,
+          "toIndex": 299,
+          "ref": {
+            "url": {
+              "url": "https://t.co/SkbpE1AH5f",
+              "urlType": "ExternalUrl"
+            }
+          }
+        }
+      ]
+    },
+    "iconType": "BirdwatchV1Icon",
+    "footer": {
+      "text": "Context is written by people who use X, and appears when rated helpful by others.  Find out more.",
+      "entities": [
+        {
+          "fromIndex": 83,
+          "toIndex": 96,
+          "ref": {
+            "url": {
+              "url": "https://x.com/i/flow/join-birdwatch",
+              "urlType": "ExternalUrl"
+            }
+          }
+        }
+      ]
+    },
+    "noteId": "2120330982687391986",
+    "footerIconType": "BirdwatchEyeOff"
+  },
+  "isEdited": false,
+  "isStaleEdit": false
+}

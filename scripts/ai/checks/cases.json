@@ -1,0 +1,60 @@
+[
+  {
+    "name": "image-text",
+    "tweet_id": "2050466058050379866",
+    "question": "Who holds the record the post refers to, and with how many saves?",
+    "expect": [
+      "johnstone",
+      "166"
+    ]
+  },
+  {
+    "name": "quoted-image",
+    "tweet_id": "2119494480269095235",
+    "question": "What does the white banner in the photo say the fans don't want?",
+    "expect": [
+      "stadium"
+    ]
+  },
+  {
+    "name": "parent-screenshot",
+    "tweet_id": "2117122089631322165",
+    "question": "What is the display name of the account in the screenshot?",
+    "expect": [
+      "どうなる日本"
+    ]
+  },
+  {
+    "name": "video-preview",
+    "tweet_id": "2120225581656621302",
+    "question": "What kind of ship is the video filmed from?",
+    "expect": [
+      "container|cargo"
+    ]
+  },
+  {
+    "name": "reply-to-quote",
+    "tweet_id": "2120067945800016080",
+    "question": "Which holiday is the conversation this post joins about, and in which country would it become a holiday?",
+    "expect": [
+      "diwali",
+      "\\bUS\\b|U\\.S\\.|united states|america"
+    ]
+  },
+  {
+    "name": "thread-top",
+    "tweet_id": "2120117369561559321",
+    "question": "What share of Allied ground forces in Southeast Asia does the first post in the thread say Indian soldiers made up?",
+    "expect": [
+      "70"
+    ]
+  },
+  {
+    "name": "nested-quote",
+    "tweet_id": "2118969848776847572",
+    "question": "Which AI video model does the most deeply quoted post say it used?",
+    "expect": [
+      "kling"
+    ]
+  }
+]

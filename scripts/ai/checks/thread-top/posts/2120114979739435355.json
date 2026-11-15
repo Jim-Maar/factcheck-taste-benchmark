@@ -1,0 +1,106 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 383,
+  "in_reply_to_screen_name": "JackWor94775747",
+  "in_reply_to_status_id_str": "2120095197006864388",
+  "in_reply_to_user_id_str": "1528232653446647808",
+  "lang": "en",
+  "created_at": "2026-11-10T11:22:55.000Z",
+  "display_text_range": [
+    29,
+    199
+  ],
+  "entities": {
+    "user_mentions": [
+      {
+        "id_str": "1528232653446647808",
+        "indices": [
+          0,
+          16
+        ],
+        "name": "Jack Worthington🇺🇸🇳🇴",
+        "screen_name": "JackWor94775747"
+      },
+      {
+        "id_str": "14437425",
+        "indices": [
+          17,
+          28
+        ],
+        "name": "fka vigs",
+        "screen_name": "vigneshr4m"
+      }
+    ]
+  },
+  "id_str": "2120114979739435355",
+  "text": "@JackWor94775747 @vigneshr4m No most definitely we were not invaded when British India declared war. We joined the European theatre too. Further, in WW1 Indians fought for UK too. Wasn't invaded then",
+  "user": {
+    "id_str": "2058931263566913536",
+    "name": "Vaishak Upadhyaya",
+    "screen_name": "AMCA_gremlin",
+    "is_blue_verified": false,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/2120737268076052480/dZGYI5n5_normal.jpg"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2120114979739435355"
+    ],
+    "editable_until_msecs": "1794313375000",
+    "edits_remaining": "5",
+    "is_edit_eligible": false
+  },
+  "conversation_count": 2,
+  "news_action_type": "conversation",
+  "parent": {
+    "favorite_count": 3,
+    "in_reply_to_screen_name": "vigneshr4m",
+    "in_reply_to_status_id_str": "2119839020155015472",
+    "in_reply_to_user_id_str": "14437425",
+    "lang": "en",
+    "reply_count": 15,
+    "retweet_count": 0,
+    "created_at": "2026-11-10T10:04:19.000Z",
+    "display_text_range": [
+      12,
+      127
+    ],
+    "entities": {
+      "user_mentions": [
+        {
+          "id_str": "14437425",
+          "indices": [
+            0,
+            11
+          ],
+          "name": "fka vigs",
+          "screen_name": "vigneshr4m"
+        }
+      ]
+    },
+    "id_str": "2120095197006864388",
+    "text": "@vigneshr4m You fought the Japanese because they invaded. It wasn’t out of altruism. Most of those battles were inconsequential",
+    "user": {
+      "id_str": "1528232653446647808",
+      "name": "Jack Worthington",
+      "screen_name": "JackWor94775747",
+      "is_blue_verified": false,
+      "profile_image_shape": "Circle",
+      "verified": false,
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/2119323587639197696/wNVLarE4_normal.jpg"
+    },
+    "edit_control": {
+      "edit_tweet_ids": [
+        "2120095197006864388"
+      ],
+      "editable_until_msecs": "1794308659000",
+      "edits_remaining": "5",
+      "is_edit_eligible": false
+    },
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "isEdited": false,
+  "isStaleEdit": false
+}

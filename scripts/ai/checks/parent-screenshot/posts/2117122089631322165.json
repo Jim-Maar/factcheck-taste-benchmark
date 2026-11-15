@@ -1,0 +1,283 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 15,
+  "in_reply_to_screen_name": "KNHjyohokyoku",
+  "in_reply_to_status_id_str": "2117066524641099966",
+  "in_reply_to_user_id_str": "827526090130272256",
+  "lang": "ja",
+  "created_at": "2026-11-02T05:10:15.000Z",
+  "display_text_range": [
+    15,
+    154
+  ],
+  "entities": {
+    "user_mentions": [
+      {
+        "id_str": "827526090130272256",
+        "indices": [
+          0,
+          14
+        ],
+        "name": "樺島万里子 Mariko Kabashima",
+        "screen_name": "KNHjyohokyoku"
+      }
+    ]
+  },
+  "id_str": "2117122089631322165",
+  "text": "@KNHjyohokyoku だから、どうしてジャガイモだけ騒ぐんですか？（どこ国産とか関係なく）\n輸入している生鮮野菜はほかにもいくらでもあって、病害虫のリスクも同様にある。\nで、検疫と言う仕組みでその危険に対応している。\n新しい品種を入れるために新たなシステム構築は要るだろうがそれは本質じゃないでしょ？",
+  "user": {
+    "id_str": "282941175",
+    "name": "柿と猫",
+    "screen_name": "kaki2neko",
+    "is_blue_verified": false,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2117122089631322165"
+    ],
+    "editable_until_msecs": "1793599815000",
+    "edits_remaining": "5",
+    "is_edit_eligible": false
+  },
+  "conversation_count": 36,
+  "news_action_type": "conversation",
+  "parent": {
+    "favorite_count": 2238,
+    "lang": "ja",
+    "possibly_sensitive": false,
+    "reply_count": 27,
+    "retweet_count": 518,
+    "created_at": "2026-11-02T01:29:27.000Z",
+    "display_text_range": [
+      0,
+      91
+    ],
+    "entities": {
+      "media": [
+        {
+          "display_url": "pic.x.com/3kIVt8Md9G",
+          "expanded_url": "https://x.com/KNHjyohokyoku/status/2117066524641099966/photo/1",
+          "indices": [
+            92,
+            115
+          ],
+          "url": "https://t.co/3kIVt8Md9G"
+        }
+      ]
+    },
+    "id_str": "2117066524641099966",
+    "text": "論点が違います。\n\n問題にしているのは、米国産の生鮮ジャガイモの輸入解禁に伴う病害虫の侵入リスクです。\n\n中国産であろうと米国産であろうと、同じリスクがあれば同じように問題にします。 https://t.co/3kIVt8Md9G",
+    "user": {
+      "id_str": "827526090130272256",
+      "name": "樺島万里子 Mariko Kabashima",
+      "screen_name": "KNHjyohokyoku",
+      "is_blue_verified": true,
+      "profile_image_shape": "Circle",
+      "verified": false,
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1684981008775696384/VpL5gAbi_normal.jpg"
+    },
+    "edit_control": {
+      "edit_tweet_ids": [
+        "2117066524641099966"
+      ],
+      "editable_until_msecs": "1793586567000",
+      "edits_remaining": "5",
+      "is_edit_eligible": true
+    },
+    "mediaDetails": [
+      {
+        "display_url": "pic.x.com/3kIVt8Md9G",
+        "expanded_url": "https://x.com/KNHjyohokyoku/status/2117066524641099966/photo/1",
+        "ext_media_availability": {
+          "status": "Available"
+        },
+        "indices": [
+          92,
+          115
+        ],
+        "media_url_https": "https://pbs.twimg.com/media/HWFUwABbAAAb0r7.png",
+        "original_info": {
+          "focus_rects": [
+            {
+              "h": 216,
+              "w": 386,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 216,
+              "w": 216,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 216,
+              "w": 189,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 216,
+              "w": 108,
+              "x": 27,
+              "y": 0
+            },
+            {
+              "h": 216,
+              "w": 466,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "height": 216,
+          "width": 466
+        },
+        "sizes": {
+          "large": {
+            "h": 216,
+            "resize": "fit",
+            "w": 466
+          },
+          "medium": {
+            "h": 216,
+            "resize": "fit",
+            "w": 466
+          },
+          "small": {
+            "h": 216,
+            "resize": "fit",
+            "w": 466
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "photo",
+        "url": "https://t.co/3kIVt8Md9G"
+      }
+    ],
+    "photos": [
+      {
+        "backgroundColor": {
+          "red": 204,
+          "green": 214,
+          "blue": 221
+        },
+        "cropCandidates": [
+          {
+            "h": 216,
+            "w": 386,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 216,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 189,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 108,
+            "x": 27,
+            "y": 0
+          },
+          {
+            "h": 216,
+            "w": 466,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "expandedUrl": "https://x.com/KNHjyohokyoku/status/2117066524641099966/photo/1",
+        "url": "https://pbs.twimg.com/media/HWFUwABbAAAb0r7.png",
+        "width": 466,
+        "height": 216
+      }
+    ],
+    "isEdited": false,
+    "isStaleEdit": false
+  },
+  "birdwatch_pivot": {
+    "destinationUrl": "https://twitter.com/i/birdwatch/n/2117185805227524391",
+    "title": "Readers added context they thought people might want to know",
+    "shorttitle": "Readers added context",
+    "visualStyle": "Default",
+    "subtitle": {
+      "text": "生鮮ジャガイモは塊茎が種いも転用可能で、ジャガイモシストセンチュウ類など土壌中15年以上生存し根絶困難な病害虫のリスクから植物防疫上原則輸入禁止（米国産はポテトチップス加工用に限定例外）。他の生鮮野菜とは生物学的リスクと被害の不可逆性が異なり、検疫サンプリングでは完全防止が難しいため特別扱いされる。\n\nmaff.go.jp/j/syouan/syoku…\nmaff.go.jp/pps/j/guidance…\nnikkei.com/article/DGXZQO…\nkhitc.com/wp/af/jyagaimo…",
+      "entities": [
+        {
+          "fromIndex": 152,
+          "toIndex": 178,
+          "ref": {
+            "url": {
+              "url": "https://t.co/chd7XP50Io",
+              "urlType": "ExternalUrl"
+            }
+          }
+        },
+        {
+          "fromIndex": 179,
+          "toIndex": 205,
+          "ref": {
+            "url": {
+              "url": "https://t.co/A3SKWNEwAX",
+              "urlType": "ExternalUrl"
+            }
+          }
+        },
+        {
+          "fromIndex": 206,
+          "toIndex": 232,
+          "ref": {
+            "url": {
+              "url": "https://t.co/11w9ToOsP0",
+              "urlType": "ExternalUrl"
+            }
+          }
+        },
+        {
+          "fromIndex": 233,
+          "toIndex": 258,
+          "ref": {
+            "url": {
+              "url": "https://t.co/KaQK5fCVvt",
+              "urlType": "ExternalUrl"
+            }
+          }
+        }
+      ]
+    },
+    "iconType": "BirdwatchV1Icon",
+    "footer": {
+      "text": "Context is written by people who use X, and appears when rated helpful by others.  Find out more.",
+      "entities": [
+        {
+          "fromIndex": 83,
+          "toIndex": 96,
+          "ref": {
+            "url": {
+              "url": "https://x.com/i/flow/join-birdwatch",
+              "urlType": "ExternalUrl"
+            }
+          }
+        }
+      ]
+    },
+    "noteId": "2117185805227524391",
+    "footerIconType": "BirdwatchEyeOff"
+  },
+  "isEdited": false,
+  "isStaleEdit": false
+}

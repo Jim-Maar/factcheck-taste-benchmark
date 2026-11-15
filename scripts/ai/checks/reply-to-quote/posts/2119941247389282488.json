@@ -1,0 +1,294 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 17112,
+  "lang": "en",
+  "possibly_sensitive": false,
+  "created_at": "2026-11-09T23:52:34.000Z",
+  "display_text_range": [
+    0,
+    75
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.x.com/c63xn5lhNC",
+        "expanded_url": "https://x.com/remarks/status/2119941247389282488/photo/1",
+        "indices": [
+          74,
+          97
+        ],
+        "url": "https://t.co/c63xn5lhNC"
+      }
+    ]
+  },
+  "id_str": "2119941247389282488",
+  "text": "JUST IN: 🇺🇸 US lawmakers introduce bill to make Diwali a federal holiday. https://t.co/c63xn5lhNC",
+  "user": {
+    "id_str": "1852499847133143040",
+    "name": "Remarks",
+    "screen_name": "remarks",
+    "is_blue_verified": true,
+    "profile_image_shape": "Square",
+    "verified": false,
+    "verified_type": "Business",
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1852774053020606464/jDJqq9vL_normal.jpg",
+    "highlighted_label": {
+      "badge": {
+        "url": "https://pbs.twimg.com/profile_images/1641221212578754562/DfiC0KW2_bigger.png"
+      },
+      "description": "Watcher.Guru",
+      "url": {
+        "url": "https://twitter.com/WatcherGuru",
+        "url_type": "DeepLink"
+      },
+      "user_label_display_type": "Badge",
+      "user_label_type": "BusinessLabel"
+    }
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2119941247389282488"
+    ],
+    "editable_until_msecs": "1794271954000",
+    "edits_remaining": "5",
+    "is_edit_eligible": true
+  },
+  "mediaDetails": [
+    {
+      "display_url": "pic.x.com/c63xn5lhNC",
+      "expanded_url": "https://x.com/remarks/status/2119941247389282488/photo/1",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        74,
+        97
+      ],
+      "media_url_https": "https://pbs.twimg.com/media/HWuLVHfXQAANpk_.jpg",
+      "original_info": {
+        "focus_rects": [
+          {
+            "h": 509,
+            "w": 909,
+            "x": 0,
+            "y": 314
+          },
+          {
+            "h": 909,
+            "w": 909,
+            "x": 0,
+            "y": 1
+          },
+          {
+            "h": 910,
+            "w": 798,
+            "x": 111,
+            "y": 0
+          },
+          {
+            "h": 910,
+            "w": 455,
+            "x": 295,
+            "y": 0
+          },
+          {
+            "h": 910,
+            "w": 909,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "height": 910,
+        "width": 909
+      },
+      "sizes": {
+        "large": {
+          "h": 910,
+          "resize": "fit",
+          "w": 909
+        },
+        "medium": {
+          "h": 910,
+          "resize": "fit",
+          "w": 909
+        },
+        "small": {
+          "h": 680,
+          "resize": "fit",
+          "w": 679
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "photo",
+      "url": "https://t.co/c63xn5lhNC"
+    },
+    {
+      "display_url": "pic.x.com/c63xn5lhNC",
+      "expanded_url": "https://x.com/remarks/status/2119941247389282488/photo/2",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        74,
+        97
+      ],
+      "media_url_https": "https://pbs.twimg.com/media/HWuLVHBXUAAwAHF.jpg",
+      "original_info": {
+        "focus_rects": [
+          {
+            "h": 298,
+            "w": 532,
+            "x": 0,
+            "y": 77
+          },
+          {
+            "h": 531,
+            "w": 531,
+            "x": 1,
+            "y": 0
+          },
+          {
+            "h": 531,
+            "w": 466,
+            "x": 33,
+            "y": 0
+          },
+          {
+            "h": 531,
+            "w": 266,
+            "x": 133,
+            "y": 0
+          },
+          {
+            "h": 531,
+            "w": 532,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "height": 531,
+        "width": 532
+      },
+      "sizes": {
+        "large": {
+          "h": 531,
+          "resize": "fit",
+          "w": 532
+        },
+        "medium": {
+          "h": 531,
+          "resize": "fit",
+          "w": 532
+        },
+        "small": {
+          "h": 531,
+          "resize": "fit",
+          "w": 532
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "photo",
+      "url": "https://t.co/c63xn5lhNC"
+    }
+  ],
+  "photos": [
+    {
+      "backgroundColor": {
+        "red": 204,
+        "green": 214,
+        "blue": 221
+      },
+      "cropCandidates": [
+        {
+          "h": 509,
+          "w": 909,
+          "x": 0,
+          "y": 314
+        },
+        {
+          "h": 909,
+          "w": 909,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "h": 910,
+          "w": 798,
+          "x": 111,
+          "y": 0
+        },
+        {
+          "h": 910,
+          "w": 455,
+          "x": 295,
+          "y": 0
+        },
+        {
+          "h": 910,
+          "w": 909,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "expandedUrl": "https://x.com/remarks/status/2119941247389282488/photo/1",
+      "url": "https://pbs.twimg.com/media/HWuLVHfXQAANpk_.jpg",
+      "width": 909,
+      "height": 910
+    },
+    {
+      "backgroundColor": {
+        "red": 204,
+        "green": 214,
+        "blue": 221
+      },
+      "cropCandidates": [
+        {
+          "h": 298,
+          "w": 532,
+          "x": 0,
+          "y": 77
+        },
+        {
+          "h": 531,
+          "w": 531,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "h": 531,
+          "w": 466,
+          "x": 33,
+          "y": 0
+        },
+        {
+          "h": 531,
+          "w": 266,
+          "x": 133,
+          "y": 0
+        },
+        {
+          "h": 531,
+          "w": 532,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "expandedUrl": "https://x.com/remarks/status/2119941247389282488/photo/2",
+      "url": "https://pbs.twimg.com/media/HWuLVHBXUAAwAHF.jpg",
+      "width": 532,
+      "height": 531
+    }
+  ],
+  "conversation_count": 2114,
+  "news_action_type": "conversation",
+  "isEdited": false,
+  "isStaleEdit": false
+}
