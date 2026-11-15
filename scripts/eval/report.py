@@ -39,7 +39,7 @@ def main() -> None:
     for label, decision in pairs:
         matrix[LABELS.index(label), LABELS.index(decision)] += 1
     correct = int(np.trace(matrix))
-    figure, axis = plt.subplots(figsize=(5.5, 5.5))
+    figure, axis = plt.subplots(figsize=(5.5, 5.8))
     axis.imshow(matrix, cmap="Blues", vmin=0)
     for row in range(2):
         for column in range(2):
@@ -53,7 +53,7 @@ def main() -> None:
     write_right, write_total = matrix[1, 1], matrix[1].sum()
     axis.set_title(
         f"{title}\naccuracy {correct}/{len(pairs)} = {correct / len(pairs):.0%}\n"
-        f"held back on {no_note_right}/{no_note_total} no-note posts, wrote on {write_right}/{write_total} posts needing a note"
+        f"no note on {no_note_right}/{no_note_total} no-note posts\nwrote on {write_right}/{write_total} posts needing a note"
     , fontsize=10)
     figure.tight_layout()
     figure.savefig(output, dpi=150)
