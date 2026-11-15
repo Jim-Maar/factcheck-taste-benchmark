@@ -16,7 +16,8 @@ import { fetchLivePost, indent, liveSource, mediaLines, renderPost, type PostSou
  * no parent for most replies. It leaves out how X rated the note, the raters'
  * reasons and the other notes on the post, so the review is the reviewer's
  * own judgement. A video that has a transcript (scripts/import/transcripts.ts)
- * shows what is said in it.
+ * shows what is said in it, and every video shows the command that saves
+ * frames from it (frames.ts), since its preview image is one moment of it.
  *
  * The review is JSON: { "explanation": "...", "reasoning": "...", "labels": ["..."], "recommendation": "taste_failure" | "fine" }.
  * Saving again with the same model replaces that model's review of the note;

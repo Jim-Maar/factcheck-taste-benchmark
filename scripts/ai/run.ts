@@ -75,7 +75,7 @@ async function runClaude(model: string, noteId: string): Promise<Usage> {
   const proc = Bun.spawn(
     [
       "claude", "-p", prompt(noteId, model), "--model", model, "--output-format", "json", "--permission-mode", "acceptEdits",
-      "--allowedTools", "Bash(bun scripts/ai/review.ts:*)", "Bash(curl:*)", "Read", "Write", "WebFetch", "WebSearch",
+      "--allowedTools", "Bash(bun scripts/ai/review.ts:*)", "Bash(bun scripts/ai/frames.ts:*)", "Bash(curl:*)", "Read", "Write", "WebFetch", "WebSearch",
     ],
     { stdin: "ignore", stdout: "pipe", stderr: "pipe" },
   );
@@ -154,6 +154,8 @@ async function main() {
   const latest = option("--latest");
   const [harness, model, ...ids] = args;
   if (!HARNESSES.includes(harness as Harness) || !model || (!ids.length && !like && !latest)) throw new Error(USAGE);
+  // Without ffmpeg a session can't see more of a video than its preview image (frames.ts), and its reviews would differ from another machine's.
+  if (!Bun.which("ffmpeg") || !Bun.which("ffprobe")) throw new Error("Install ffmpeg first: the reviewer needs it to look at the videos of posts.");
 
   const done = await reviewedBy(model);
   const noteIds = like ? [...(await reviewedBy(like))].filter((id) => !done.has(id)) : latest ? await latestNotes(Number(latest), done) : ids;

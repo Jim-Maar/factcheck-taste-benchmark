@@ -22,9 +22,15 @@ export function videoId(media: VideoMedia): string | null {
   return null;
 }
 
+const mp4sSmallestFirst = (media: VideoMedia) =>
+  (media.variants ?? []).filter((v) => v.content_type === "video/mp4").sort((a, b) => (a.bit_rate ?? 0) - (b.bit_rate ?? 0));
+
 /** The video's smallest MP4 file, which is enough to hear it. */
 export function smallestMp4(media: VideoMedia): string | null {
-  const files = (media.variants ?? []).filter((v) => v.content_type === "video/mp4");
-  files.sort((a, b) => (a.bit_rate ?? 0) - (b.bit_rate ?? 0));
-  return files[0]?.url ?? null;
+  return mp4sSmallestFirst(media)[0]?.url ?? null;
+}
+
+/** The video's largest MP4 file, in which text on the screen can be read. */
+export function largestMp4(media: VideoMedia): string | null {
+  return mp4sSmallestFirst(media).at(-1)?.url ?? null;
 }

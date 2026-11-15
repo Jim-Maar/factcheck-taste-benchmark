@@ -1,4 +1,4 @@
-import { videoId } from "../../src/core/xVideo";
+import { largestMp4, videoId } from "../../src/core/xVideo";
 import { displayText, SYNDICATION_URL, syndicationToken, toXMedia, type SyndicationTweet, type XMedia } from "../import/xPosts";
 
 /* A post as a reader of it meets it on X: the thread above it, oldest first,
@@ -38,12 +38,15 @@ export const indent = (lines: string[]) => lines.map((line) => `    ${line}`);
 const byline = (tweet: SyndicationTweet) =>
   `${[tweet.user?.name, tweet.user?.screen_name && `@${tweet.user.screen_name}`].filter(Boolean).join(" ") || "Unknown author"}, ${tweet.created_at ?? "unknown date"}`;
 
-/** A post's photos and videos, each video with its transcript when it has one. */
+/** A post's photos and videos, each video with the command for more of its
+ *  frames (frames.ts) and its transcript when it has one. */
 export async function mediaLines(source: PostSource, media: XMedia[]): Promise<string[]> {
   const lines: string[] = [];
   for (const item of media) {
     lines.push(`  ${item.type}: ${source.mediaLocation(item.url ?? item.preview_image_url ?? "(no url)")}`);
     const id = videoId(item);
+    const file = id && largestMp4(item);
+    if (file) lines.push(...indent([`That is its preview image. For frames from the rest of the video: bun scripts/ai/frames.ts ${file}`]));
     const transcript = id && source.transcript ? await source.transcript(id) : null;
     if (transcript !== null) lines.push(...indent([transcript ? `What is said in the video: ${transcript}` : "The video has no speech."]));
   }

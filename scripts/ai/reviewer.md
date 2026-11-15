@@ -21,8 +21,9 @@ Judge the note as a reader of the post meets it: the thread the post replies to,
 
 - Read notes only with `bun scripts/ai/review.ts show <note id>`. Don't query the database any other way.
 - Don't look up how the note was rated on X, and don't look for other notes on the post. Don't open the post on X.
-- `show` prints what is said in a post's videos, when they have been transcribed. A video without that line has no transcript, so judge it from its preview image.
-- You may open the post's images and the note's sources, and search the web for the context a reader would have (who the people are, what the event or the meme is).
+- For a video, `show` prints its preview image, which is only its first moment, and what is said in it, when it has been transcribed. It also prints a `bun scripts/ai/frames.ts ...` command, which saves frames from across the video as images you can open. Run it when the video has no transcript, or when the note says something about what the video shows.
+- If what the note is about isn't in the frames, look closer once at the likeliest moment, as the command's output explains, then say in the reasoning that you couldn't see it.
+- You may open the post's images, its videos' frames and the note's sources, and search the web for the context a reader would have (who the people are, what the event or the meme is).
 
 ## For each note
 
