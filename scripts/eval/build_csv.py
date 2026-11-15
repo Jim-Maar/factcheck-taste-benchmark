@@ -8,8 +8,8 @@ Positive examples (label write_note): the newest posts still on X that have
 an AI-written note rated helpful on X, one row per post, with the newest such
 note as the reference note.
 
-Negative examples (label no_note): the no-note group that
-scripts/ai/collect_no_note.py collects. The note on each is an AI-written
+Negative examples (label no_note): the newest SIDE_SIZE posts of the
+no-note group that scripts/ai/collect_no_note.py collects. The note on each is an AI-written
 note rated not helpful, which the judge calls a taste failure on a post that
 needs no community note at all. These are hard cases: an AI notewriter did
 write a note there.
@@ -29,6 +29,8 @@ import psycopg
 from dotenv import load_dotenv
 
 REPO = Path(__file__).resolve().parents[2]
+# How many posts each side has.
+SIDE_SIZE = 100
 COLUMNS = [
     "tweet_id", "post_url", "label", "author_name", "author_handle", "post_text",
     "referenced_kind", "referenced_text", "thread_text", "media_urls", "video_transcripts",
@@ -89,7 +91,7 @@ def main() -> None:
     load_dotenv(REPO / ".env")
     with psycopg.connect(os.environ["DATABASE_URL"]) as connection:
         params = {"model": model, "version": version, "tried": []}
-        negatives = collect_no_note.group(connection, params)
+        negatives = collect_no_note.group(connection, params)[:SIDE_SIZE]
         positives = [row[0] for row in connection.execute(POSITIVES, {"count": positives_count if positives_count is not None else len(negatives)}).fetchall()]
         cursor = connection.execute(ROWS, {**params, "ids": negatives + positives})
         names = [column.name for column in cursor.description]
