@@ -2,8 +2,10 @@
 set's no-note group has enough notes. A note is in the group when the
 judge's review with the given prompt version says it is a taste failure on a
 post that needs no community note. Notes a labeller answered either question
-for stay out: the eval set holds only notes nobody labelled by hand. Run from
-the repository root:
+for stay out: the eval set holds only notes nobody labelled by hand. So do
+notes on a post that has a note rated helpful, in our data or among the other
+notes X lists for it, because such a post did need a note. Run from the
+repository root:
 
     uv run --with "psycopg[binary]" --with python-dotenv scripts/ai/collect_no_note.py \\
         <model> <prompt version> <group size to reach> [--effort <level>]
@@ -29,6 +31,10 @@ PARALLEL_SESSIONS = 4
 # measured its own: about 5 of the first 27 reviews of this run.
 FIRST_GUESS_GROUP_SHARE = 5 / 27
 
+POST_HAS_HELPFUL_NOTE = """
+    (n.other_notes_state = 'helpful'
+     or exists (select 1 from taste.x_notes h where h.tweet_id = n.tweet_id and h.status = 'helpful'))
+"""
 HAND_LABELLED = """
     (exists (select 1 from taste.verdicts v where v.source = 'x' and v.note_id = n.note_id)
      or exists (select 1 from taste.needs_note q where q.source = 'x' and q.note_id = n.note_id))
@@ -40,12 +46,12 @@ JUDGE_IN_GROUP = """
 """
 GROUP = f"""
     select n.note_id from taste.x_notes n
-     where n.status = 'not_helpful' and not {HAND_LABELLED} and {JUDGE_IN_GROUP}
+     where n.status = 'not_helpful' and not {HAND_LABELLED} and not {POST_HAS_HELPFUL_NOTE} and {JUDGE_IN_GROUP}
      order by n.written desc
 """
 CANDIDATES = f"""
     select n.note_id from taste.x_notes n join taste.x_posts p on p.tweet_id = n.tweet_id
-     where n.status = 'not_helpful' and p.available and not {HAND_LABELLED}
+     where n.status = 'not_helpful' and p.available and not {HAND_LABELLED} and not {POST_HAS_HELPFUL_NOTE}
        and not exists (select 1 from taste.ai_reviews a where a.source = 'x' and a.note_id = n.note_id and a.model = %(model)s and a.prompt_version = %(version)s)
        and not (n.note_id = any(%(tried)s::text[]))
      order by n.written desc
