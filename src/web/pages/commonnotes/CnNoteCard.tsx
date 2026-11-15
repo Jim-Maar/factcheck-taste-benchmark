@@ -50,7 +50,7 @@ function CreatorByline({ card }: { card: CnNote }) {
  *  its post, the note with its status and sources and the website's votes,
  *  and below a rule the labeller's review and the labels. */
 export function CnNoteCard({ card }: { card: CnNote }) {
-  const { setVerdict, setAccuracy } = useLabelling("commonnotes");
+  const { setVerdict, setAccuracy, setNeedsNote } = useLabelling("commonnotes");
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
   const { note } = card;
@@ -62,8 +62,10 @@ export function CnNoteCard({ card }: { card: CnNote }) {
         {card.pHelpful !== null && ` · ${Math.round(card.pHelpful * 100)}% chance of ending helpful`}
       </p>
       <ReviewSection
+        needsNote={card.needsNote}
         accuracy={card.accuracy}
         verdict={card.verdict}
+        onNeedsNote={(needsNote) => setNeedsNote(note.id, needsNote)}
         onAccuracy={(accuracy) => setAccuracy(note.id, accuracy)}
         onVerdict={(verdict) => setVerdict(note.id, verdict)}
       >

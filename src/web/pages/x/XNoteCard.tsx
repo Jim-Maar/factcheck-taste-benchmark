@@ -119,7 +119,7 @@ function OtherNotes({ notes }: { notes: XNote["otherNotes"] }) {
  *  writer's answers and X's ratings, and last, below a rule, the labeller's
  *  own review. Adapted from commonnotes.net's X notewriter page. */
 function XNoteBody({ note, onAddComment }: { note: XNote; onAddComment?: () => void }) {
-  const { setVerdict, setAccuracy } = useLabelling("x");
+  const { setVerdict, setAccuracy, setNeedsNote } = useLabelling("x");
   const written = new Date(note.written).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return (
     <Card className="mx-auto w-full max-w-[40rem] p-4 xl:mx-0 xl:max-w-none">
@@ -147,8 +147,10 @@ function XNoteBody({ note, onAddComment }: { note: XNote; onAddComment?: () => v
         <OtherNotes notes={note.otherNotes} />
       </section>
       <ReviewSection
+        needsNote={note.needsNote}
         accuracy={note.accuracy}
         verdict={note.verdict}
+        onNeedsNote={(needsNote) => setNeedsNote(note.noteId, needsNote)}
         onAccuracy={(accuracy) => setAccuracy(note.noteId, accuracy)}
         onVerdict={(verdict) => setVerdict(note.noteId, verdict)}
       >

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cva } from "class-variance-authority";
-import { isDatabaseOutdated, type Accuracy, type Verdict } from "@cn/core/taste";
+import { isDatabaseOutdated, type Accuracy, type NeedsNote, type Verdict } from "@cn/core/taste";
 import { cn } from "@cn/ui/cn";
 import { focusRing } from "@cn/ui/focusRing";
 import { CheckIcon, CloseIcon } from "@cn/ui/icons";
@@ -52,6 +52,12 @@ const ACCURACY_OPTIONS = [
   { value: "wrong", label: "Wrong", meaning: "The note is factually wrong", tone: "negative", icon: <CloseIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
   { value: "unsure", label: "Unsure", meaning: "Not sure whether the note is correct", tone: "neutral", icon: null },
 ] as const satisfies readonly { value: Accuracy; label: string; meaning: string; tone: string; icon: React.ReactNode }[];
+
+const NEEDS_NOTE_OPTIONS = [
+  { value: "yes", label: "Yes", meaning: "The post needs a community note", tone: "positive", icon: <CheckIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
+  { value: "no", label: "No", meaning: "The post needs no community note", tone: "negative", icon: <CloseIcon size={VERDICT_ICON_SIZE} aria-hidden /> },
+  { value: "unsure", label: "Unsure", meaning: "Not sure whether the post needs a community note", tone: "neutral", icon: null },
+] as const satisfies readonly { value: NeedsNote; label: string; meaning: string; tone: string; icon: React.ReactNode }[];
 
 type PillOption<T extends string> = { value: T; label: string; meaning: string; tone: "positive" | "negative" | "caution" | "neutral"; icon: React.ReactNode };
 
@@ -107,4 +113,9 @@ export function VerdictPills({ verdict, onChange }: { verdict: Verdict | null; o
 /** The answer to "Accurate?", asked apart from taste. */
 export function AccuracyPills({ accuracy, onChange }: { accuracy: Accuracy | null; onChange: (accuracy: Accuracy | null) => Promise<void> }) {
   return <ChoicePills options={ACCURACY_OPTIONS} value={accuracy} onChange={onChange} />;
+}
+
+/** The answer to "Needs a community note?", about the post the note is on. */
+export function NeedsNotePills({ needsNote, onChange }: { needsNote: NeedsNote | null; onChange: (needsNote: NeedsNote | null) => Promise<void> }) {
+  return <ChoicePills options={NEEDS_NOTE_OPTIONS} value={needsNote} onChange={onChange} />;
 }
