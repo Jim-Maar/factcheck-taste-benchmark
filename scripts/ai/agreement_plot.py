@@ -189,7 +189,6 @@ def main() -> None:
     if eval_set_only:
         figure, axis = plt.subplots(figsize=(5.5, 5.5))
         confusion_panel(axis, eval_set_pairs, "Taste failure, and no note needed?")
-        figure.suptitle(f"{model} (prompt {prompt_version})", fontsize=10)
         figure.tight_layout()
         figure.savefig(output, dpi=150)
         print(f"Saved {output}: {len(eval_set_pairs)} notes")
