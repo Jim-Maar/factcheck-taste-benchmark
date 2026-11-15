@@ -44,10 +44,13 @@ JUDGE_IN_GROUP = """
              where a.source = 'x' and a.note_id = n.note_id and a.model = %(model)s and a.prompt_version = %(version)s
                and a.recommendation = 'taste_failure' and a.needs_note = 'no')
 """
+# One note per post, the newest, because the eval counts posts.
 GROUP = f"""
-    select n.note_id from taste.x_notes n
-     where n.status = 'not_helpful' and not {HAND_LABELLED} and not {POST_HAS_HELPFUL_NOTE} and {JUDGE_IN_GROUP}
-     order by n.written desc
+    select note_id from (
+      select distinct on (n.tweet_id) n.note_id, n.written from taste.x_notes n
+       where n.status = 'not_helpful' and not {HAND_LABELLED} and not {POST_HAS_HELPFUL_NOTE} and {JUDGE_IN_GROUP}
+       order by n.tweet_id, n.written desc) newest_per_post
+     order by written desc
 """
 CANDIDATES = f"""
     select n.note_id from taste.x_notes n join taste.x_posts p on p.tweet_id = n.tweet_id
