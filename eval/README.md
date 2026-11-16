@@ -35,5 +35,10 @@ Score each post by whether the notewriter's decision matches `label`. Report the
 | Claude Opus 5.5, medium effort | 129/200 (64%) | 67/100 | 62/100 | $33 |
 | Claude Sonnet 5.5, medium effort | 116/200 (58%) | 59/100 | 57/100 | $8 |
 | Claude Haiku 5.5, medium effort | 103/200 (52%) | 37/100 | 66/100 | $5 |
+| Claude Sonnet 5.5, low effort | 113/200 (56%) | 69/100 | 44/100 | $5 |
+| Claude Sonnet 5.5, high effort | 117/200 (58%) | 49/100 | 68/100 | $17 |
+| Claude Sonnet 5.5, xhigh effort | 116/200 (58%) | 44/100 | 72/100 | $40 |
+
+More effort makes Sonnet write more notes (75 at low effort, 128 at xhigh), but its accuracy hardly changes. One xhigh session got an X "trending" summary page back from a web search, on a post that needs no note, where it rightly wrote none.
 
 `results/` has every decision of each model, with the note it wrote and its reasoning, and a plot of each. The site's Notewriter eval tab (https://jim-maar.github.io/factcheck-taste-benchmark/?tab=eval) shows every post with each model's answer, and picks up a new results file once it is on main. Each post got a fresh Claude Code session with web search, in an empty folder, with X and Community Notes sites blocked. It saw the post as a reader meets it: the thread above it, its quotes, its images and frames from its videos, and the transcripts. It never saw a note. The prompt, the runner and the script that builds this CSV are in `scripts/eval/` on the eval-set branch (pull request #1).
