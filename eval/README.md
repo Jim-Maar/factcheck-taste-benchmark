@@ -33,5 +33,7 @@ Score each post by whether the notewriter's decision matches `label`. Report the
 | Notewriter | Accuracy | Right on `no_note` | Right on `write_note` | Cost |
 | --- | --- | --- | --- | --- |
 | Claude Opus 5.5, medium effort | 129/200 (64%) | 67/100 | 62/100 | $33 |
+| Claude Sonnet 5.5, medium effort | 116/200 (58%) | 59/100 | 57/100 | $8 |
+| Claude Haiku 5.5, medium effort | 103/200 (52%) | 37/100 | 66/100 | $5 |
 
-`results/opus-5-5-medium.jsonl` has every decision with the note it wrote and its reasoning. Each post got a fresh Claude Code session with web search, in an empty folder, with X and Community Notes sites blocked. It saw the post as a reader meets it: the thread above it, its quotes, its images and frames from its videos, and the transcripts. It never saw a note. The prompt, the runner and the script that builds this CSV are in `scripts/eval/` on the eval-set branch (pull request #1).
+`results/` has every decision of each model, with the note it wrote and its reasoning, and a plot of each. Each post got a fresh Claude Code session with web search, in an empty folder, with X and Community Notes sites blocked. It saw the post as a reader meets it: the thread above it, its quotes, its images and frames from its videos, and the transcripts. It never saw a note. The prompt, the runner and the script that builds this CSV are in `scripts/eval/` on the eval-set branch (pull request #1).
