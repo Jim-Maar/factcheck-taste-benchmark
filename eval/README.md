@@ -33,6 +33,10 @@ Score each post by whether the notewriter's decision matches `label`. Report the
 | Notewriter | Accuracy | Right on `no_note` | Right on `write_note` | Cost |
 | --- | --- | --- | --- | --- |
 | Claude Fable 5.2, medium effort | 141/200 (70%) | 74/100 | 67/100 | $81 |
+| GPT-6.1 Sol (Codex), medium effort | 139/200 (70%) | 74/100 | 65/100 | subscription |
+| GPT-6 Astra (Codex), medium effort | 138/200 (69%) | 76/100 | 62/100 | subscription |
+| GPT-6.1 Terra (Codex), medium effort | 121/200 (60%) | 47/100 | 74/100 | subscription |
+| GPT-6 Luna (Codex), medium effort | 103/200 (52%) | 17/100 | 86/100 | subscription |
 | Claude Opus 5.5, medium effort | 129/200 (64%) | 67/100 | 62/100 | $33 |
 | Claude Sonnet 5.5, medium effort | 116/200 (58%) | 59/100 | 57/100 | $8 |
 | Claude Haiku 5.5, medium effort | 103/200 (52%) | 37/100 | 66/100 | $5 |
@@ -41,6 +45,8 @@ Score each post by whether the notewriter's decision matches `label`. Report the
 | Claude Sonnet 5.5, xhigh effort | 116/200 (58%) | 44/100 | 72/100 | $40 |
 
 Fable 5.2 is also the judge that picked the `no_note` posts, at high effort, so its score on that side partly measures agreement with itself.
+
+The GPT models ran in Codex, whose web search cannot block sites the way Claude Code's can. Some of their searches returned pages from X: 4 posts for Luna, 5 for Terra, 10 for Sol and 5 for Astra. Three of these were Community Notes pages (one post each for Terra, Sol and Astra). The sessions never opened X pages themselves, and many excluded X in their queries.
 
 More effort makes Sonnet write more notes (75 at low effort, 128 at xhigh), but its accuracy hardly changes. One xhigh session got an X "trending" summary page back from a web search, on a post that needs no note, where it rightly wrote none.
 
