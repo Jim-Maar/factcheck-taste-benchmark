@@ -5,6 +5,7 @@ import { auditActions, newSession, QuotaError, readAnswer, runSession, sessionAc
 import { transcript } from "../ai/note";
 import { fetchLivePostStrict, indent, mediaLines, renderPost, type PostSource } from "../ai/thread";
 import { localMedia } from "../ai/workspace";
+import { parseCsv } from "../../src/shared/csv";
 import { target } from "../import/db";
 import type { XMedia } from "../import/xPosts";
 
@@ -37,31 +38,6 @@ const QUOTA_STRIKES = 3;
 interface EvalRow {
   tweet_id: string;
   label: string;
-}
-
-/** A CSV file as rows of named fields (RFC 4180: quoted fields may hold
- *  commas, line breaks and doubled quotes). */
-function parseCsv(text: string): Record<string, string>[] {
-  const records: string[][] = [];
-  let field = "";
-  let record: string[] = [];
-  let quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i]!;
-    if (quoted) {
-      if (char === '"' && text[i + 1] === '"') (field += '"'), i++;
-      else if (char === '"') quoted = false;
-      else field += char;
-    } else if (char === '"') quoted = true;
-    else if (char === ",") record.push(field), (field = "");
-    else if (char === "\n" || char === "\r") {
-      if (char === "\r" && text[i + 1] === "\n") i++;
-      record.push(field), records.push(record), (record = []), (field = "");
-    } else field += char;
-  }
-  if (field || record.length) record.push(field), records.push(record);
-  const [header, ...rows] = records;
-  return rows.filter((row) => row.length === header!.length).map((row) => Object.fromEntries(header!.map((name, i) => [name, row[i]!])));
 }
 
 /** The post as the reviewer sees it: live from X's embed endpoint with its
