@@ -16,6 +16,18 @@ Site: https://jim-maar.github.io/factcheck-taste-benchmark/ (shared password). E
 
 The env file is `~/dev/env/factcheck-taste-benchmark/env`, linked as `.env` into each checkout.
 
+## Export the potential taste benchmark
+
+The human-labelled export is a potential benchmark for reviewing existing notes,
+separate from the notewriter decision eval in `eval/`. It has no fixed splits or
+established evaluation protocol yet.
+
+Set `DATABASE_URL` in `.env`, then run `bun scripts/export/benchmark.ts` from the repository root.
+It reads one consistent, read-only DB snapshot and exports every X note with a human verdict to
+`benchmark/notes.jsonl`, captured tweet context to `benchmark/tweets.jsonl`, and snapshot metadata
+to `benchmark/manifest.json`. Generated files are gitignored. No `yus/` files are needed.
+The consumer-facing schema and evaluation caveats are in [benchmark/README.md](benchmark/README.md).
+
 ## Build and run the site
 
 You need [Bun](https://bun.sh). The site reads the database through two public variables, `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (copy `.env.example` to `.env` and fill it in, or link the shared env file above).
@@ -47,3 +59,11 @@ cap bun scripts/import/index.ts transcripts <count>         # costs about $0.11 
 - `x` reads X's public Community Notes data from a folder of its zip files (notes, noteStatusHistory and ratings, from `https://ton.twimg.com/birdwatch-public-data/<YYYY/MM/DD>/...`). It keeps the notes of the AI notewriters listed in cn-return-bot's `datasets/big_eval/ai_author_ids.txt` that are rated helpful or not helpful, with their ratings, the raters' reasons and the other notes on the same post.
 - `posts` fills in the text of each post. It first copies the posts cn-return-bot already stored, then asks X's free embed endpoint (the address embedded posts load from, no key) for the rest. A post X no longer has is marked unavailable.
 - `transcripts <count>` writes down what is said in the videos of the posts under the newest `<count>` helpful and `<count>` not helpful notes (`transcripts reviewed`: under every note an AI reviewer has reviewed), including videos in the posts they quote. ffmpeg takes the sound from the video and Whisper on Groq transcribes it, so it needs `GROQ_API_KEY` and ffmpeg. Groq's rate limit makes it slow, about 20 videos a minute at best. The cards show a transcript under its video, and `scripts/ai/review.ts show` gives it to the AI reviewer.
+
+## Documentation routing
+
+| Topic | File |
+| --- | --- |
+| Potential taste benchmark fields and use | [benchmark/README.md](benchmark/README.md) |
+| Running AI reviewers | [scripts/ai/running.md](scripts/ai/running.md) |
+| Reviewer rubric | [scripts/ai/reviewer.md](scripts/ai/reviewer.md) |

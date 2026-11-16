@@ -7,7 +7,7 @@
     "build": "vite build",
     "typecheck": "bunx typescript@7.0.2 --noEmit",
     "lint": "eslint --cache --max-warnings 0",
-    "test": "bun test src",
+    "test": "bun test src scripts/export",
     "check": "bun run typecheck && bun run lint && bun run test"
   },
   "dependencies": {
