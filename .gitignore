@@ -8,3 +8,6 @@ data/
 .eslintcache
 supabase/.temp/
 !.env.example
+/benchmark/*.jsonl
+/benchmark/manifest.json
+/benchmark/*.tmp
