@@ -10,13 +10,15 @@ const navLink = cn(
   focusRing,
 );
 
-/** A tab: one of the two lists of notes, or the summary of them. */
-export type Tab = Source | "summary";
+/** A tab: one of the two lists of notes, the summary of them, or the
+ *  notewriter eval. */
+export type Tab = Source | "summary" | "eval";
 
 export const TABS: { source: Tab; label: string }[] = [
   { source: "x", label: "Community Notes" },
   { source: "commonnotes", label: "CommonNotes" },
   { source: "summary", label: "Summary" },
+  { source: "eval", label: "Notewriter eval" },
 ];
 
 /** The bar at the top of the page, as on commonnotes.net: the name on the

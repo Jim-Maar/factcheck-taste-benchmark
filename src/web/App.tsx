@@ -7,6 +7,7 @@ import { SiteHeader, TABS, type Tab } from "./components/SiteHeader";
 import { NOTE_FIELDS } from "./noteFields";
 import { NoteTab, queryStorageKey } from "./NoteTab";
 import { CnNoteCard } from "./pages/commonnotes/CnNoteCard";
+import { EvalTab } from "./pages/eval/EvalTab";
 import { SummaryTab } from "./pages/summary/SummaryTab";
 import { XNoteCard } from "./pages/x/XNoteCard";
 
@@ -21,6 +22,7 @@ const INTRO: Record<Tab, string> = {
   x: "Community Notes on X by AI notewriters that X rated helpful or not helpful, from X's public data.",
   commonnotes: "Every note on commonnotes.net, with its claim, post and votes.",
   summary: "Labels, AI reviews and costs for the Community Notes tab.",
+  eval: "200 posts on X, of which 100 need a community note and 100 don't. Each model saw every post and decided whether to write a note. A note shows as helpful when writing it was right, and as not helpful when the post needed none.",
 };
 
 /** Switching tabs starts the new tab from its own remembered filters, so the
@@ -73,6 +75,8 @@ export function App() {
           </div>
           {tab === "summary" ? (
             <SummaryTab />
+          ) : tab === "eval" ? (
+            <EvalTab />
           ) : tab === "x" ? (
             <NoteTab key="x" source="x" fields={NOTE_FIELDS.x} renderCard={(card) => <XNoteCard note={card} />} />
           ) : (

@@ -12,4 +12,8 @@ export const queryKeys = {
   /** Everything the Summary tab counts. */
   tasteSummary: ["tasteSummary"] as const,
   sourceDetails: (noteId: string) => ["sourceDetails", noteId] as const,
+  /** The notewriter eval's labels and every model's answers. */
+  evalData: ["evalData"] as const,
+  /** The posts of the notewriter eval. */
+  evalPosts: ["evalPosts"] as const,
 };
