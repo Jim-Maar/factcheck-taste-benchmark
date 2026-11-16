@@ -32,12 +32,15 @@ Score each post by whether the notewriter's decision matches `label`. Report the
 
 | Notewriter | Accuracy | Right on `no_note` | Right on `write_note` | Cost |
 | --- | --- | --- | --- | --- |
+| Claude Fable 5.2, medium effort | 141/200 (70%) | 74/100 | 67/100 | $81 |
 | Claude Opus 5.5, medium effort | 129/200 (64%) | 67/100 | 62/100 | $33 |
 | Claude Sonnet 5.5, medium effort | 116/200 (58%) | 59/100 | 57/100 | $8 |
 | Claude Haiku 5.5, medium effort | 103/200 (52%) | 37/100 | 66/100 | $5 |
 | Claude Sonnet 5.5, low effort | 113/200 (56%) | 69/100 | 44/100 | $5 |
 | Claude Sonnet 5.5, high effort | 117/200 (58%) | 49/100 | 68/100 | $17 |
 | Claude Sonnet 5.5, xhigh effort | 116/200 (58%) | 44/100 | 72/100 | $40 |
+
+Fable 5.2 is also the judge that picked the `no_note` posts, at high effort, so its score on that side partly measures agreement with itself.
 
 More effort makes Sonnet write more notes (75 at low effort, 128 at xhigh), but its accuracy hardly changes. One xhigh session got an X "trending" summary page back from a web search, on a post that needs no note, where it rightly wrote none.
 
