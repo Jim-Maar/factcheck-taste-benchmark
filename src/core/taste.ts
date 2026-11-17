@@ -27,7 +27,7 @@ export interface Label {
 }
 
 /** The AI reviewer answers only yes or no. */
-export type AiRecommendation = Extract<Verdict, "taste_failure" | "fine">;
+export type AiRecommendation = Extract<Verdict, "taste_failure" | "fine" | "unsure">;
 
 /** An AI reviewer's account of a note: the context a reader may lack, which
  *  can be empty, and the verdict it recommends with its reasons and the names
@@ -37,6 +37,9 @@ export interface AiReview {
   recommendation: AiRecommendation;
   reasoning: string;
   labels: string[];
+  /** Whether the reviewer thinks the post needs a community note at all.
+   *  Null for reviews made before it was asked. */
+  needsNote: NeedsNote | null;
   model: string;
   createdAt: string;
 }
@@ -300,6 +303,7 @@ interface AiReviewRow {
   recommendation: AiRecommendation;
   reasoning: string;
   labels: string[];
+  needs_note: NeedsNote | null;
   model: string;
   created_at: string;
 }
@@ -312,7 +316,7 @@ export function watchAiReviews(source: Source, onReview: (noteId: string, review
     .channel(`ai-reviews-${source}`)
     .on<AiReviewRow>("postgres_changes", { event: "*", schema: "taste", table: "ai_reviews", filter: `source=eq.${source}` }, ({ new: row }) => {
       if (!("note_id" in row)) return;
-      onReview(row.note_id, { explanation: row.explanation, recommendation: row.recommendation, reasoning: row.reasoning, labels: row.labels, model: row.model, createdAt: row.created_at });
+      onReview(row.note_id, { explanation: row.explanation, recommendation: row.recommendation, reasoning: row.reasoning, labels: row.labels, needsNote: row.needs_note, model: row.model, createdAt: row.created_at });
     })
     .subscribe();
   return () => void supabase.removeChannel(channel);

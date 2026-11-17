@@ -29,7 +29,7 @@ import { target } from "../import/db";
 interface ReviewRow {
   note_id: string;
   model: string;
-  recommendation: "taste_failure" | "fine";
+  recommendation: "taste_failure" | "fine" | "unsure";
   labels: string[] | null;
   cost_usd: number | string | null;
   input_tokens: number | null;

@@ -1,5 +1,5 @@
 import { agreement, correctedPrevalence, fleissKappa, type Agreement, type Prevalence } from "./agreement";
-import type { NeedsNote, Verdict } from "./taste";
+import type { AiRecommendation, NeedsNote, Verdict } from "./taste";
 
 /* The Summary tab: what has been judged and reviewed on the X tab, what the
  * reviews cost, and how each model and notewriter does on each kind of taste
@@ -18,7 +18,7 @@ export const LIST_PRICES: Record<string, { input: number; cachedInput: number; o
 export interface SummaryReview {
   noteId: string;
   model: string;
-  recommendation: "taste_failure" | "fine";
+  recommendation: AiRecommendation;
   labels: string[];
   inputTokens: number | null;
   cachedInputTokens: number | null;

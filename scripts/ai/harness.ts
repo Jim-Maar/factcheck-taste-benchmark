@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
-import { realpathSync } from "node:fs";
+import { existsSync, readdirSync, realpathSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 /* One harness session with a clean context: the prompt and nothing else.
@@ -103,9 +103,23 @@ export interface RunOptions {
   prices: Prices;
 }
 
+/* The native installer puts a small launcher on the PATH, which looks for the
+ * real program under $HOME/.local/share/claude/versions. A session's HOME is
+ * an empty folder, so the launcher finds nothing there and exits with 1. So
+ * sessions start the newest installed version directly. Without the native
+ * install, the claude on the PATH is the program itself. */
+const CLAUDE_VERSIONS_DIR = join(homedir(), ".local/share/claude/versions");
+
+function claudeBinary(): string {
+  if (!existsSync(CLAUDE_VERSIONS_DIR)) return "claude";
+  const newest = readdirSync(CLAUDE_VERSIONS_DIR).sort(Bun.semver.order).at(-1);
+  if (!newest) throw new Error(`${CLAUDE_VERSIONS_DIR} holds no Claude Code version.`);
+  return join(CLAUDE_VERSIONS_DIR, newest);
+}
+
 function claudeCommand(o: RunOptions): string[] {
   return [
-    "claude", "-p",
+    claudeBinary(), "-p",
     // --bare would be simpler, but it leaves the session only the Read tool (2.1.325).
     "--safe-mode", "--setting-sources", "",
     "--model", o.model,
